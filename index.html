@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PayPortion</title>
+<meta name="description" content="Give your paycheck a plan. A simple zero-based budgeting app that tells you how to allocate each paycheck. Your data stays on your device.">
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--ink:#1d2320;--mute:#68716c;--line:#e3e1d9;--acc:#1f7a5a;--good:#1f7a5a;--bad:#c0392b;--warn:#a86a0a;--soft:#eef4f0;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121614;--card:#1b211e;--ink:#e8ece9;--mute:#98a39d;--line:#2d3632;--acc:#4cc59a;--good:#4cc59a;--bad:#ff7b6b;--warn:#e6b04f;--soft:#202a25;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121614;--card:#1b211e;--ink:#e8ece9;--mute:#98a39d;--line:#2d3632;--acc:#4cc59a;--good:#4cc59a;--bad:#ff7b6b;--warn:#e6b04f;--soft:#202a25;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}
+[hidden]{display:none!important}
+main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:22px;margin:0}
+.tag{color:var(--acc);font-weight:600;font-size:14px;margin:0 0 12px}
+.tm{font-size:.5em;font-weight:600;color:var(--mute);margin-left:1px}
+.card.welcome{background:var(--soft);border:2px solid var(--acc)}
+.welcome h2{font-size:19px;margin:0 0 6px;color:var(--acc)}
+.welcome p{margin:0 0 6px;font-size:15px}
+.welcome ol{margin:0 0 12px;padding-left:22px;font-size:14.5px}
+.welcome li{margin-bottom:4px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.themebtn{white-space:nowrap;margin-top:2px}
+.swatches{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+.sw{width:38px;height:38px;border-radius:50%;border:3px solid var(--card);box-shadow:0 0 0 1px var(--line);padding:0}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ink)}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--line);border-radius:12px;padding:4px;margin-bottom:12px}
+.tabs button{border:0;background:none;border-radius:9px;padding:9px 8px;font-size:15px;font-weight:600;color:var(--mute)}
+.tabs button[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.sub{color:var(--mute);margin:0 0 14px;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.card>h2{font-size:16px;margin:0 0 10px}
+.paygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.pc-h{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:13px;color:var(--mute)}
+.pc-h select{font-size:13px;padding:4px 2px;color:var(--ink)}
+.pc-h .x{margin-left:auto}
+.money{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:10px;padding:0 10px;background:var(--bg)}
+.money span{color:var(--mute)}
+input,select{font:inherit;color:inherit;background:transparent;border:0;outline:0;min-width:0}
+.money input{width:100%;padding:10px 0;text-align:right}
+.money:focus-within,.nm:focus,select:focus,input[type=date]:focus{border-color:var(--acc)}
+.big-in input{font-size:22px;font-weight:600}
+details.sched{margin-top:12px;font-size:14px}
+details.sched summary{cursor:pointer;color:var(--acc)}
+.sched-b{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:10px}
+.sched-b label,.form3 label,.det label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute)}
+.sched-b select,input[type=date]{border:1px solid var(--line);border-radius:8px;padding:6px;background:var(--bg);font-size:14px;color:var(--ink)}
+.form3{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.form3 input[type=date],.form3 select{padding:9px 8px;font-size:15px;width:100%}
+.form3 .money input{padding:8px 0;font-size:15px}
+.btn{background:var(--acc);color:var(--card);border:0;border-radius:8px;padding:9px 14px;font-size:14px;font-weight:600}
+.hint{font-size:13px;color:var(--mute);margin:8px 0 0}
+.hint:empty{display:none}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px}
+.stat{background:var(--soft);border-radius:10px;padding:8px 10px;min-width:0}
+.stat small{display:block;color:var(--mute);font-size:12px}
+.stat b{font-size:16px}
+.stat .money{background:var(--card);margin-top:2px;padding:0 8px}.stat .money input{padding:3px 0;font-weight:700}
+.bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin-top:14px}
+.bar div{height:100%;background:var(--acc);width:0;transition:width .25s}
+#msg{margin-top:10px;font-weight:600;font-size:15px}
+.pays{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:12px}
+.pay{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;color:var(--mute)}
+.pay b{display:block;font-size:15px;margin-top:2px}
+.ok{color:var(--good)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.gh{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.gh h2{font-size:16px;margin:0}
+.gh .tot{font-weight:600;white-space:nowrap}
+.gh .gname{font-weight:700;font-size:16px;flex:1}
+.goal{font-size:12.5px;color:var(--mute);margin:2px 0 8px}
+.row>*{min-width:0}.row select{width:100%}
+.row .nm{grid-area:nm}.row .due{grid-area:due}.row .money{grid-area:money}.row .when{grid-area:when}.row .x{grid-area:x;justify-self:end}
+.row{display:grid;grid-template-columns:1fr 92px 104px 112px 96px 22px;grid-template-areas:"nm due money when tools x";gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--line)}
+.nm{width:100%;padding:6px 4px;border:1px solid transparent;border-radius:6px}
+.row .money{padding:0 8px}.row .money input{padding:7px 0}
+select{border:1px solid var(--line);border-radius:8px;padding:7px 4px;background:var(--bg);font-size:14px}
+select option{background:var(--card);color:var(--ink)}
+button{font:inherit;cursor:pointer;color:inherit}
+.x,.more{background:none;border:0;color:var(--mute);font-size:18px;line-height:1;padding:2px}
+.x:hover{color:var(--bad)}
+.more{font-size:16px;border-radius:6px;width:26px;height:26px;letter-spacing:-1px}
+.more:hover,.more[aria-expanded="true"]{background:var(--soft);color:var(--acc)}
+.more.has{color:var(--acc);font-weight:700}
+.det{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;background:var(--soft);border-radius:10px;padding:10px;margin:0 0 8px}
+.det select{min-width:130px}
+.det .money{width:130px;background:var(--card)}.det .money input{padding:7px 0}
+.det .hint{margin:0 0 8px;flex-basis:100%}
+.det .pct{width:100px}
+.row .tools{grid-area:tools;display:flex;justify-content:flex-end;gap:2px}
+.cashbtn{background:none;border:1px dashed var(--line);border-radius:14px;height:26px;padding:0 8px;font-size:12px;color:var(--mute);white-space:nowrap}
+.cashbtn:not([aria-pressed="true"]){filter:grayscale(1)}
+.cashbtn:hover{border-color:var(--acc);color:var(--ink)}
+.cashbtn[aria-pressed="true"]{background:var(--soft);border:1px solid var(--acc);color:var(--acc);font-weight:600}
+.pay .cash{display:block;margin-top:2px}
+.cashbox{margin-top:10px;padding:8px 12px;border-radius:10px;background:var(--soft);font-size:14px}
+.gl{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--mute);padding:0 4px 8px}
+.gbar{flex:0 0 120px;height:6px;border-radius:4px;background:var(--line);overflow:hidden}
+.gbar div{height:100%;background:var(--acc);width:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.seg button{border:1px solid var(--line);background:var(--bg);border-radius:20px;padding:6px 12px;font-size:13px;color:var(--mute)}
+.seg button[aria-pressed="true"]{border-color:var(--acc);color:var(--acc);font-weight:600;background:var(--soft)}
+.dprow{display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.dprow small{display:block;color:var(--mute);font-size:12px}
+.dprow .n{color:var(--mute);font-weight:700}
+.dprow .when{text-align:right;white-space:nowrap}
+.dpsum{margin-top:10px;font-size:14px}
+.add{background:none;border:1px dashed var(--line);border-radius:8px;color:var(--mute);padding:6px 10px;margin-top:8px;font-size:14px}
+.add:hover{border-color:var(--acc);color:var(--acc)}
+.add.wide{width:100%;padding:10px;margin:0 0 14px;background:var(--card)}
+.lrow{display:grid;grid-template-columns:22px 1fr 130px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.lrow.lhead{font-size:12px;font-weight:600;color:var(--mute);align-items:end;margin-top:10px}
+.lrow.lhead small{display:block;font-weight:400}
+.lrow.lhead #pcount{text-align:right;padding-right:4px}
+.lrow input[type=checkbox]{width:18px;height:18px;accent-color:var(--acc)}
+.lrow .ln small{display:block;color:var(--mute);font-size:12px}
+.lrow.paid .ln{color:var(--mute);text-decoration:line-through}
+.lrow .money input{padding:6px 0}
+.xrow{border-top:2px solid var(--line);font-weight:600}
+.xrow .nm{font-weight:600;padding:4px}
+.xrow b{text-align:right;padding-right:10px}
+.hrow{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:9px 2px;font-size:14px}
+.hrow:hover{color:var(--acc)}
+.hrow.on{font-weight:700;color:var(--acc)}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;color:var(--mute);font-size:13px;margin-top:6px}
+.acts{display:flex;flex-wrap:wrap;gap:6px}
+.reset{background:none;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px;color:var(--mute)}
+.reset:hover{border-color:var(--acc);color:var(--ink)}
+@media(max-width:620px){
+  .row{grid-template-columns:88px 1fr 96px 22px;grid-template-areas:"nm nm tools x" "due money when when"}
+  .stat b{font-size:14px}
+  .lrow{grid-template-columns:22px 1fr 110px}
+}
+</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1f7a5a">
+<link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="PayPortion">
+</head>
+<body><main>
+<div class="top">
+  <div><h1>PayPortion<sup class="tm">&trade;</sup></h1><p class="tag">Give your paycheck a plan.</p></div>
+  <button class="reset themebtn" id="themebtn" data-act="theme" aria-expanded="false" aria-controls="themep"><span aria-hidden="true">🎨</span> Theme</button>
+</div>
+<div class="card" id="themep" hidden>
+  <h2>Theme</h2>
+  <div class="swatches" id="swatches" role="group" aria-label="Color"></div>
+  <div class="seg" id="modes" role="group" aria-label="Light or dark"></div>
+</div>
+<div class="tabs" role="tablist">
+  <button role="tab" id="tab-plan" data-act="view" data-v="plan">1. My plan</button>
+  <button role="tab" id="tab-pay" data-act="view" data-v="pay">2. Payday</button>
+</div>
+
+<section id="planv">
+<div class="card welcome" id="welcome" hidden>
+  <h2>You earned it. Now give it a plan.</h2>
+  <p>PayPortion is a simple zero-based budgeting app that tells you how to allocate each paycheck. Three steps:</p>
+  <ol>
+    <li><b>Expected paychecks:</b> pick your paydays and type what you usually take home.</li>
+    <li><b>Your plan:</b> fill in your bills and savings below until you reach $0 left. Add due dates and PayPortion picks the right paycheck for each bill.</li>
+    <li><b>Payday:</b> when you get paid, drop the amount into the Payday tab and see exactly where it goes.</li>
+    <li><b>Pay some things in cash?</b> Tap <b>&#x1F4B5; Cash</b> on those bills, and on payday PayPortion tells you how much cash to withdraw.</li>
+  </ol>
+  <button class="btn" data-act="welcome">Let's get started</button>
+</div>
+<p class="sub">Set this up once: what you expect to be paid, and where every dollar goes until you reach $0. Give a bill a due date and it's paid from the last paycheck before it's due. Tap <b>&#x1F4B5; Cash</b> on anything you pay in cash, and payday tells you how much to withdraw.</p>
+<div class="card">
+  <h2>Expected paychecks</h2>
+  <div class="paygrid" id="paylist"></div>
+  <button class="add" id="addpay" data-act="addpay">+ Add a paycheck</button>
+  <details class="sched">
+    <summary>Paid every week or every 2 weeks? Fill in this month's paydays</summary>
+    <div class="sched-b">
+      <label>How often<select id="sf"><option value="7">Every week</option><option value="14" selected>Every 2 weeks</option></select></label>
+      <label>Any recent payday<input type="date" id="sa"></label>
+      <button class="btn" data-act="sched">Fill in <span id="smon"></span></button>
+    </div>
+    <p class="hint" id="shint"></p>
+  </details>
+  <div class="stats">
+    <div class="stat"><small>Total pay</small><b id="inc">$0.00</b></div>
+    <div class="stat"><small>Budgeted</small><b id="tot">$0.00</b></div>
+    <div class="stat"><small>Left to assign</small><b id="left">$0.00</b></div>
+  </div>
+  <div class="bar"><div id="fill"></div></div>
+  <div id="msg"></div>
+  <div class="pays" id="cover"></div>
+</div>
+<div id="groups"></div>
+<div id="debtplan"></div>
+<button class="add wide" data-act="addcat">+ Add your own category</button>
+</section>
+
+<section id="payv" hidden>
+<p class="sub">Got paid? Drop in the amount and see exactly where it goes, based on your plan.</p>
+<div class="card">
+  <h2>Drop in a paycheck</h2>
+  <div class="form3">
+    <label>Date paid<input type="date" id="nd"></label>
+    <label>Which paycheck<select id="np"></select></label>
+    <label>Amount received<div class="money"><span>$</span><input id="na" inputmode="decimal" autocomplete="off"></div></label>
+  </div>
+  <button class="btn" data-act="newpay">Map it out</button>
+  <p class="hint" id="nhint"></p>
+</div>
+<div id="entry"></div>
+<div id="hist"></div>
+</section>
+
+<div class="foot">
+  <span>Your budget is saved on this device only. <a href="privacy.html">Privacy policy</a><br>&copy; 2026 Ravenna Frank. PayPortion&trade; All rights reserved.</span>
+  <span class="acts"><button class="reset" data-act="import" title="Bring in a budget from Excel or a CSV file. A file exported from PayPortion works best; any sheet with Item and Amount columns works too.">Import from Excel</button><button class="reset" data-act="export">Export to Excel</button><button class="reset" data-act="backup">Back up</button><button class="reset" data-act="restore">Restore</button><button class="reset" data-act="reset">Clear everything</button></span>
+</div>
+<input type="file" id="file" accept=".json,application/json" hidden>
+<input type="file" id="xfile" accept=".xlsx,.csv" hidden>
+</main>
+<script>
+/* Plan items are [name, amount, when, due, details].
+   when: a paycheck id, "S" = split evenly across all paychecks, or "A" = auto: paid from the last payday
+   on or before the due day (wrapping to last month's final payday), or split if there's no due date.
+   due: day of the month (1-31), or 0 for none.
+   details: {o: balance owed, r: repeats every r months, f: full bill amount when r > 1}.
+   The built-in categories are locked; ones the user adds have c:true and can be renamed or deleted.
+   S.log holds each paycheck dropped in on the Payday tab, with its own copy of the lines it paid. */
+const MAXP=6,KEY="zero-budget-app-v1";
+const CORE=[["Charitable Gifts",[10,15],["Giving"]],["Savings",[5,10],["Emergency Fund"]],["Housing",[25,35],["Rent / Mortgage"]],
+  ["Utilities",[5,10],["Electric","Water","Internet","Phone"]],["Food",[5,15],["Groceries"]],["Transportation",[10,15],["Gas","Car Insurance"]],
+  ["Clothing",[2,7],[]],["Medical / Health",[5,10],[]],["Personal",[5,10],[]],["Recreation",[5,10],[]],["Debts",[5,10],["Credit Card 1"]]];
+const REPS=[[1,"Monthly"],[2,"Every 2 months"],[3,"Every 3 months"],[6,"Every 6 months"],[12,"Yearly"],[24,"Every 2 years"]];
+let _u=0;
+const uid=()=>"i"+Date.now().toString(36)+(_u++).toString(36);
+const newItem=n=>[n,0,"A",0,{o:0,r:1,f:0,a:0,t:0,s:0,c:false},uid()];
+/* Accent colors: [name, light-mode accent, light soft tint, light background, dark accent, dark soft tint, dark background].
+   Light accents keep at least 4.5:1 contrast on white; "good" (in range, $0 left) always stays green. */
+const THEMES=[["green","#1f7a5a","#eef4f0","#f6f5f1","#4cc59a","#202a25","#121614"],
+  ["blue","#1f5fae","#edf2fa","#f4f6fa","#6aa8f0","#1d2533","#11151c"],
+  ["purple","#6b3fb0","#f2eefa","#f7f5fa","#b593f2","#262033","#15121b"],
+  ["pink","#b0306a","#fbeef4","#faf5f7","#f08cb8","#33202a","#1b1216"],
+  ["orange","#a8500f","#fbf1e8","#faf6f2","#f2a35e","#33261b","#1b1611"],
+  ["teal","#0f7380","#eaf5f6","#f3f8f8","#4fc6d3","#1b2c2e","#101819"]];
+const MODES=[["auto","Match my computer"],["light","Light"],["dark","Dark"]];
+const darkQ=matchMedia("(prefers-color-scheme: dark)");
+const DEF=()=>({v:3,view:"plan",sched:null,extra:"Extra Money",dp:"snow",theme:{mode:"auto",acc:"green"},log:[],cur:null,
+  pays:[{id:"15",day:15,amt:0},{id:"30",day:30,amt:0}],
+  groups:CORE.map(([n,g,items])=>({n,g,c:false,i:items.map(newItem)}))});
+const $=id=>document.getElementById(id);
+const fmt=n=>n.toLocaleString("en-US",{style:"currency",currency:"USD"});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const num=v=>{const n=parseFloat(String(v).replace(/[^0-9.\-]/g,""));return isNaN(n)?0:n};
+const r2=n=>Math.round(n*100)/100;
+const fin=v=>{const n=+v;return isFinite(n)?r2(n):0};
+const ORD=d=>d+((d%100>10&&d%100<14)?"th":(["th","st","nd","rd"][d%10]||"th"));
+const DAYS=Array.from({length:31},(_,k)=>k+1);
+const MONTH=()=>new Date().toLocaleString("en-US",{month:"long"});
+const newId=k=>"p"+Date.now().toString(36)+(k||0);
+const today=()=>{const d=new Date(),p=n=>String(n).padStart(2,"0");return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`};
+const isDate=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s);
+const longDate=s=>{const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"})};
+const day=n=>Math.min(31,Math.max(0,Math.round(+n)||0));
+
+/* Checks saved or restored data and upgrades older versions (v1 had only a 15th and a 30th check). */
+function clean(o){
+  if(!o||typeof o!=="object"||!Array.isArray(o.groups))return null;
+  let pays=Array.isArray(o.pays)?o.pays:[{id:"15",day:15,amt:o.p15},{id:"30",day:30,amt:o.p30}];
+  const seen=new Set();
+  pays=pays.filter(p=>p&&typeof p==="object")
+    .map(p=>({id:String(p.id??""),day:Math.max(1,day(p.day)),amt:fin(p.amt)}))
+    .filter(p=>p.id&&!seen.has(p.id)&&seen.add(p.id)).slice(0,MAXP);
+  if(!pays.length)pays=[{id:"15",day:15,amt:0}];
+  const core=new Set(CORE.map(c=>c[0]));
+  const groups=o.groups.filter(g=>g&&typeof g==="object").map(g=>({
+    n:String(g.n??""),
+    g:Array.isArray(g.g)&&g.g.length===2?[fin(g.g[0]),fin(g.g[1])]:null,
+    c:g.c===true||(o.v===3?false:!core.has(String(g.n))),
+    i:(Array.isArray(g.i)?g.i:[]).filter(Array.isArray).map(it=>{
+      const d=it[4]&&typeof it[4]==="object"?it[4]:{},r=[1,2,3,6,12,24].includes(+d.r)?+d.r:1;
+      return [String(it[0]??""),fin(it[1]),String(it[2]??"S"),day(it[3]),
+        {o:fin(d.o),r,f:fin(d.f),a:Math.min(100,Math.max(0,fin(d.a))),t:fin(d.t),s:fin(d.s),c:!!d.c},
+        typeof it[5]==="string"&&it[5]?it[5]:uid()]})}));
+  const sc=o.sched;
+  const sched=sc&&(sc.f===7||sc.f===14)&&isDate(sc.a)?{f:sc.f,a:sc.a}:null;
+  const log=(Array.isArray(o.log)?o.log:[]).filter(e=>e&&typeof e==="object"&&isDate(e.date)).slice(-1000).map(e=>({
+    id:String(e.id??newId()),date:e.date,pay:String(e.pay??""),label:String(e.label??""),recv:fin(e.recv),plan:fin(e.plan),
+    lines:(Array.isArray(e.lines)?e.lines:[]).filter(Array.isArray).map(l=>[String(l[0]??""),fin(l[1]),day(l[2]),!!l[3],String(l[4]??""),!!l[5]])}));
+  const cur=log.some(e=>e.id===o.cur)?o.cur:null;
+  return {v:3,view:o.view==="pay"?"pay":"plan",sched,extra:String(o.extra||"Extra Money"),dp:o.dp==="aval"?"aval":"snow",welcomed:!!o.welcomed,
+    theme:{mode:MODES.some(m=>m[0]===o.theme?.mode)?o.theme.mode:"auto",acc:THEMES.some(t=>t[0]===o.theme?.acc)?o.theme.acc:"green"},
+    log,cur,pays,groups};
+}
+
+let S;
+try{S=clean(JSON.parse(localStorage.getItem(KEY)))}catch(e){S=null}
+if(!S)S=DEF();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const pay=id=>S.pays.find(p=>p.id===id);
+let openDet=new WeakSet(); // items whose "···" details panel is open
+/* Paycheck that should cover a bill due on day d: the last payday on or before d,
+   or, if every payday is after d, the final payday of the month before. */
+function autoPay(d){
+  if(!d)return "S";
+  const ps=S.pays.slice().sort((a,b)=>a.day-b.day),before=ps.filter(p=>p.day<=d);
+  return (before.length?before[before.length-1]:ps[ps.length-1]).id;
+}
+const owner=it=>it[2]==="A"?autoPay(it[3]):pay(it[2])?it[2]:"S";
+
+/* Days of the given month that land on a weekly / every-2-weeks schedule containing the anchor date. */
+function schedDays(f,anchor,y,m){
+  const [ay,am,ad]=anchor.split("-").map(Number);
+  const a=Date.UTC(ay,am-1,ad),start=Date.UTC(y,m,1),end=Date.UTC(y,m+1,1),step=f*864e5,out=[];
+  for(let t=a+Math.ceil((start-a)/step)*step;t<end;t+=step)out.push(new Date(t).getUTCDate());
+  return out;
+}
+
+/* ---------- Tab 1: the plan ---------- */
+function itemRow(it,gi,ii,g){
+  const auto=it[2]==="A",w=auto?"A":owner(it),ap=autoPay(it[3]),d=it[4],k=gi+":"+ii,open=openDet.has(it),a=`data-g="${gi}" data-i="${ii}"`;
+  // Debts show balance and interest; other categories show a savings goal; your own categories show both.
+  const debtish=g.n==="Debts"||g.c||d.o||d.a,saveish=g.n!=="Debts"||d.t;
+  return`
+  <div class="row">
+    <input class="nm" data-k="nm" ${a} value="${esc(it[0])}" aria-label="Item name">
+    <select class="due" data-k="due" ${a} aria-label="Due date">
+      <option value="0">Due: none</option>
+      ${DAYS.map(x=>`<option value="${x}"${x===it[3]?" selected":""}>Due ${ORD(x)}</option>`).join("")}
+    </select>
+    <div class="money"><span>$</span><input data-k="amt" ${a} inputmode="decimal" value="${it[1]||""}" placeholder="0" aria-label="Amount each month"></div>
+    <select class="when" data-k="when" ${a} aria-label="Paid from" title="Auto picks the paycheck from the due date and updates if your paydays change. Pick a check to always use that one.">
+      <option value="A"${auto?" selected":""}>Auto (${ap==="S"?"split":ORD(pay(ap).day)})</option>
+      ${S.pays.map(p=>`<option value="${esc(p.id)}"${w===p.id?" selected":""}>${ORD(p.day)} check</option>`).join("")}
+      <option value="S"${w==="S"?" selected":""}>Split</option>
+    </select>
+    <span class="tools"><button class="cashbtn" data-act="cash" ${a} aria-pressed="${d.c}" title="${d.c?"Paid with cash. Click to stop.":"Pay this with cash? Click to add it to the cash you withdraw on payday."}" aria-label="Pay ${esc(it[0])} with cash">\u{1F4B5} Cash</button><button class="more${d.o||d.a||d.t||d.r>1?" has":""}" data-act="det" ${a} aria-expanded="${open}" aria-label="More details" title="How often it repeats, savings goal, balance owed, interest rate">&middot;&middot;&middot;</button></span>
+    <button class="x" data-act="del" ${a} aria-label="Remove item">&times;</button>
+  </div>${d.t?`
+  <div class="gl"><div class="gbar"><div id="gb-${k}"></div></div><span id="gt-${k}"></span></div>`:""}${open?`
+  <div class="det">
+    <label>How often<select data-k="rep" ${a}>${REPS.map(([v,t])=>`<option value="${v}"${v===d.r?" selected":""}>${t}</option>`).join("")}</select></label>
+    ${d.r>1?`<label>Full bill<div class="money"><span>$</span><input data-k="full" ${a} inputmode="decimal" value="${d.f||""}" placeholder="0"></div></label>
+    <p class="hint" id="fh-${k}">${d.f?`Set aside ${fmt(r2(d.f/d.r))} a month`:"Enter the full bill and it's spread across the months"}</p>`:""}
+    ${debtish?`
+    <label>Balance owed (optional)<div class="money"><span>$</span><input data-k="owed" ${a} inputmode="decimal" value="${d.o||""}" placeholder="0"></div></label>
+    <label>Interest rate (optional)<div class="money pct"><input data-k="apr" ${a} inputmode="decimal" value="${d.a||""}" placeholder="0"><span>%</span></div></label>
+    <p class="hint" id="dh-${k}">${debtHint(it)}</p>`:""}
+    ${saveish?`
+    <label>Savings goal (optional)<div class="money"><span>$</span><input data-k="goal" ${a} inputmode="decimal" value="${d.t||""}" placeholder="0"></div></label>
+    ${d.t?`<label>Already saved<div class="money"><span>$</span><input data-k="start" ${a} inputmode="decimal" value="${d.s||""}" placeholder="0"></div></label>
+    <p class="hint">Each paycheck you drop in on the Payday tab adds to this goal.</p>`:""}`:""}
+  </div>`:""}`;
+}
+
+/* Savings goal progress: what was already saved plus every Payday entry that paid this item. */
+function goalInfo(it){
+  const d=it[4];let saved=d.s;
+  S.log.forEach(e=>e.lines.forEach(l=>{if(l[4]===it[5])saved+=l[1]}));
+  saved=r2(saved);
+  const left=r2(d.t-saved),pct=d.t?Math.min(100,saved/d.t*100):0;
+  const txt=left<=0?`${fmt(saved)} of ${fmt(d.t)} — goal reached! ✓`
+    :`${fmt(saved)} of ${fmt(d.t)} saved`+(it[1]>0?` · about ${Math.ceil(left/it[1])} month${Math.ceil(left/it[1])===1?"":"s"} to go`:"");
+  return {pct,txt,done:left<=0};
+}
+
+/* For an item with a balance owed: monthly interest and roughly when this monthly amount pays it off. */
+function debtHint(it){
+  const d=it[4],B=d.o,P=it[1],i=d.a/1200;
+  if(!B)return "";
+  const int=r2(B*i),s=d.a?`About ${fmt(int)} a month goes to interest. `:"";
+  if(!P)return s;
+  if(P<=int)return s+"This payment doesn't cover the interest, so the balance won't go down.";
+  const n=i?Math.ceil(-Math.log(1-i*B/P)/Math.log(1+i)):Math.ceil(B/P),end=new Date();
+  end.setMonth(end.getMonth()+n);
+  return s+`At ${fmt(P)} a month, it's paid off in about ${n} month${n===1?"":"s"} (${end.toLocaleDateString("en-US",{month:"short",year:"numeric"})}).`;
+}
+
+function render(){
+  S.pays.sort((a,b)=>a.day-b.day);
+  // Welcome card: only for someone just starting (no expected pay yet) who hasn't dismissed it.
+  $("welcome").hidden=S.welcomed||S.pays.some(p=>p.amt);
+  const one=S.pays.length===1;
+  $("paylist").innerHTML=S.pays.map(p=>{const id=esc(p.id),o=ORD(p.day);return`
+  <div class="pc">
+    <div class="pc-h"><label for="pd-${id}">Paid on the</label>
+      <select id="pd-${id}" data-k="pday" data-p="${id}">${DAYS.map(d=>`<option value="${d}"${d===p.day?" selected":""}>${ORD(d)}</option>`).join("")}</select>
+      ${one?"":`<button class="x" data-act="delpay" data-p="${id}" aria-label="Remove the ${o} paycheck">&times;</button>`}
+    </div>
+    <div class="money big-in"><span>$</span><input id="pa-${id}" data-k="pamt" data-p="${id}" inputmode="decimal" autocomplete="off" value="${p.amt||""}" placeholder="0" aria-label="Expected take-home of the ${o} paycheck"></div>
+  </div>`}).join("");
+  $("addpay").hidden=S.pays.length>=MAXP;
+  $("cover").innerHTML=S.pays.map(p=>`<div class="pay">${ORD(p.day)} check covers<b id="a-${esc(p.id)}"></b><span id="l-${esc(p.id)}"></span><small class="cash" id="c-${esc(p.id)}"></small></div>`).join("");
+  $("smon").textContent=MONTH();
+  if(S.sched){$("sf").value=S.sched.f;$("sa").value=S.sched.a}
+  S.groups.forEach(g=>g.i.sort((a,b)=>(a[3]||99)-(b[3]||99))); // by due date; items without one keep their order at the end
+  $("groups").innerHTML=S.groups.map((g,gi)=>`
+  <div class="card" data-gcard="${gi}">
+    <div class="gh">${g.c
+      ?`<input class="nm gname" data-k="gname" data-g="${gi}" value="${esc(g.n)}" aria-label="Category name"><span class="tot" id="s${gi}"></span><button class="x" data-act="delcat" data-g="${gi}" aria-label="Delete this category">&times;</button>`
+      :`<h2>${esc(g.n)}</h2><span class="tot" id="s${gi}"></span>`}</div>
+    <div class="goal" id="t${gi}"></div>
+    ${g.i.map((it,ii)=>itemRow(it,gi,ii,g)).join("")}
+    <button class="add" data-act="add" data-g="${gi}">+ Add item</button>
+  </div>`).join("");
+  update();
+  renderView();
+}
+
+function status(left){return left===0?["ok","$0 left ✓"]:left>0?["warn",fmt(left)+" left"]:["bad",fmt(-left)+" over"]}
+
+function update(){
+  const n=S.pays.length,c={},cash={};
+  S.pays.forEach(p=>cash[p.id]=0);
+  S.pays.forEach(p=>c[p.id]=0);
+  const inc=r2(S.pays.reduce((s,p)=>s+p.amt,0));
+  let tot=0;
+  S.groups.forEach((g,gi)=>{
+    let sub=0,owed=0;
+    g.i.forEach((it,ii)=>{
+      sub+=it[1];owed+=it[4].o;
+      const h=openDet.has(it)&&$(`dh-${gi}:${ii}`);if(h)h.textContent=debtHint(it);
+      const gt=it[4].t&&$(`gt-${gi}:${ii}`);
+      if(gt){const q=goalInfo(it);gt.textContent=q.txt;gt.className=q.done?"ok":"";$(`gb-${gi}:${ii}`).style.width=q.pct+"%"}
+      const w=owner(it);
+      if(w==="S")S.pays.forEach(p=>c[p.id]+=it[1]/n);else c[w]+=it[1];
+      if(it[4].c){if(w==="S")S.pays.forEach(p=>cash[p.id]+=it[1]/n);else cash[w]+=it[1]}
+    });
+    tot+=sub;
+    const pct=inc>0?sub/inc*100:0,ow=owed?` &middot; ${fmt(owed)} still owed`:"";
+    $("s"+gi).textContent=fmt(sub);
+    const t=$("t"+gi);
+    if(g.g){
+      const [lo,hi]=g.g;
+      let cls="ok",txt="in range";
+      if(pct<lo){cls="warn";txt="below range"}else if(pct>hi){cls="bad";txt="above range"}
+      if(!sub){cls="";txt="nothing assigned yet"}
+      t.innerHTML=`Goal ${lo}–${hi}% &middot; now ${pct.toFixed(1)}% &middot; <span class="${cls}">${txt}</span>${ow}`;
+    }else t.innerHTML=(sub?`${pct.toFixed(1)}% of take-home`:"")+(sub?ow:ow.replace(" &middot; ",""));
+  });
+  tot=r2(tot);
+  const left=r2(inc-tot);
+  $("inc").textContent=fmt(inc);$("tot").textContent=fmt(tot);
+  const L=$("left");L.textContent=fmt(left);
+  $("fill").style.width=(inc>0?Math.min(tot/inc*100,100):0)+"%";
+  const m=$("msg");
+  if(!inc){m.className="";m.textContent="Enter the take-home pay you expect from each paycheck to begin."}
+  else if(left===0){m.className="ok";m.textContent="Zero! Every dollar has a plan ✓"}
+  else if(left>0){m.className="warn";m.textContent=fmt(left)+" still needs a plan"}
+  else{m.className="bad";m.textContent=fmt(-left)+" over — trim something to get back to zero"}
+  L.className=left===0?"ok":left>0?"warn":"bad";
+  S.pays.forEach(p=>{
+    const used=r2(c[p.id]);
+    $("a-"+p.id).textContent=fmt(used)+" of "+fmt(p.amt);
+    const [cls,txt]=status(r2(p.amt-used));
+    const e=$("l-"+p.id);e.className=cls;e.textContent=txt;
+    $("c-"+p.id).textContent=cash[p.id]?`\u{1F4B5} ${fmt(r2(cash[p.id]))} in cash`:"";
+  });
+  renderDebtPlan();
+  save();
+}
+
+/* ---------- debt payoff planner ---------- */
+const monthsFromNow=n=>{const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+n);return d.toLocaleDateString("en-US",{month:"short",year:"numeric"})};
+/* Month-by-month simulation of every item with a balance owed. With roll on, once a debt is paid off its
+   payment goes to the next debt in the chosen order (the "snowball"). Gives up after 50 years. */
+function payoff(order,roll){
+  const s=order.map(d=>({...d,end:0}));let m=0,int=0;
+  while(s.some(d=>d.b>0.005)&&m<600){
+    m++;let pool=0;
+    s.forEach(d=>{
+      if(d.b<=0.005){if(roll)pool+=d.p;return}
+      const x=d.b*d.i;int+=x;d.b+=x;
+      const p=Math.min(d.p,d.b);d.b-=p;if(roll)pool+=d.p-p;
+      if(d.b<=0.005)d.end=m;
+    });
+    if(roll)for(const d of s){if(pool<=0.005)break;if(d.b>0.005){const p=Math.min(pool,d.b);d.b-=p;pool-=p;if(d.b<=0.005)d.end=m}}
+  }
+  return {s,m:s.every(d=>d.end)?Math.max(...s.map(d=>d.end)):0,int:r2(int)};
+}
+function renderDebtPlan(){
+  const ds=[];
+  S.groups.forEach(g=>g.i.forEach(it=>{if(it[4].o>0)ds.push({n:it[0]||"(unnamed)",b:it[4].o,a:it[4].a,i:it[4].a/1200,p:it[1]})}));
+  const box=$("debtplan");
+  if(!ds.length){box.innerHTML="";return}
+  const av=S.dp==="aval";
+  const order=ds.slice().sort(av?(x,y)=>y.a-x.a||x.b-y.b:(x,y)=>x.b-y.b||y.a-x.a);
+  const R=payoff(order,true),F=payoff(order,false);
+  const sum=R.m
+    ?`Debt-free by <b>${monthsFromNow(R.m)}</b>, paying about <b>${fmt(R.int)}</b> in interest.`+
+      (!F.m?" Without rolling payments over, some of these would never be paid off."
+        :F.m>R.m?` Rolling each paid-off payment into the next debt saves you ${F.m-R.m} month${F.m-R.m===1?"":"s"} and about ${fmt(r2(F.int-R.int))}.`:"")
+    :`<span class="bad">At these payments, some debts never get paid off.</span> Raise the monthly amount on the ones marked below.`;
+  box.innerHTML=`<div class="card"><h2>Debt payoff plan</h2>
+    <div class="seg" role="group" aria-label="Payoff order">
+      <button data-act="dp" data-v="snow" aria-pressed="${!av}">Smallest balance first</button>
+      <button data-act="dp" data-v="aval" aria-pressed="${av}">Highest interest first</button>
+    </div>
+    <p class="hint" style="margin:0 0 6px">${av?"Saves the most interest.":"Quick wins that keep you motivated."} When a debt is paid off, its payment rolls into the next one. Uses the balance, interest rate and monthly amount from each debt's &middot;&middot;&middot; details.</p>
+    ${R.s.map((d,k)=>`<div class="dprow"><span class="n">${k+1}</span><span>${esc(d.n)}<small>${fmt(order[k].b)}${d.a?` at ${d.a}%`:""} &middot; ${fmt(d.p)}/month</small></span>
+      <span class="when">${d.end?`Paid off ${monthsFromNow(d.end)}`:`<span class="bad">Not paid off</span>`}</span></div>`).join("")}
+    <p class="dpsum">${sum}</p></div>`;
+}
+
+/* Items paid from a paycheck that no longer exists go back to "Split". */
+function dropOrphans(){S.groups.forEach(g=>g.i.forEach(it=>{if(it[2]!=="A"&&!pay(it[2]))it[2]="S"}))}
+
+function fillSchedule(){
+  const v=$("sa").value,h=$("shint");
+  if(!v){h.textContent="Pick the date of any recent payday first.";$("sa").focus();return}
+  const f=+$("sf").value,now=new Date(),days=schedDays(f,v,now.getFullYear(),now.getMonth());
+  const old=S.pays.slice().sort((a,b)=>a.day-b.day),last=old[old.length-1].amt;
+  S.sched={f,a:v};
+  S.pays=days.map((d,k)=>old[k]?{...old[k],day:d}:{id:newId(k),day:d,amt:last});
+  dropOrphans();render();
+  h.textContent=`${MONTH()} has ${days.length} paydays: the ${days.map(ORD).join(", ")}. Check the amounts above.`;
+}
+
+/* ---------- Tab 2: payday ---------- */
+/* What the plan says this paycheck should pay: [name, amount, due, paid]. */
+function linesFor(pid){
+  const n=S.pays.length,out=[];
+  S.groups.forEach(g=>g.i.forEach(it=>{
+    const w=owner(it),a=r2(w==="S"?it[1]/n:w===pid?it[1]:0);
+    if(a)out.push([it[0]||"(unnamed)",a,it[3],false,it[5],it[4].c]);
+  }));
+  return out;
+}
+/* The planned paycheck whose day of the month is closest to the date paid. */
+function nearestPay(date){
+  const d=+date.slice(8,10);let best=S.pays[0],bd=99;
+  S.pays.forEach(p=>{const x=Math.abs(p.day-d),c=Math.min(x,31-x);if(c<bd){bd=c;best=p}});
+  return best.id;
+}
+const entry=()=>S.log.find(e=>e.id===S.cur);
+
+function renderView(){
+  const pv=S.view==="pay";
+  $("planv").hidden=pv;$("payv").hidden=!pv;
+  $("tab-plan").setAttribute("aria-selected",!pv);$("tab-pay").setAttribute("aria-selected",pv);
+  if(pv)renderPay();else update(); // paydays entered since last time move savings goals forward
+}
+
+function renderPay(){
+  if(!$("nd").value)$("nd").value=today();
+  const sel=$("np"),keep=sel.value;
+  sel.innerHTML=S.pays.map(p=>`<option value="${esc(p.id)}">${ORD(p.day)} check (planned ${fmt(p.amt)})</option>`).join("")+
+    `<option value="X">Extra income (bonus, side job…)</option>`;
+  sel.value=keep==="X"||pay(keep)?keep:nearestPay($("nd").value);
+  setPlaceholder();
+  const e=entry();
+  // Cash choices made on My plan apply to paychecks already entered too (matched by item, or by name for older entries).
+  if(e){const all=S.groups.flatMap(g=>g.i);
+    e.lines.forEach(l=>{const it=all.find(x=>l[4]&&x[5]===l[4])||all.find(x=>x[0].trim()===l[0].trim());if(it){l[5]=it[4].c;if(!l[4])l[4]=it[5]}});save()}
+  $("entry").innerHTML=e?`
+  <div class="card">
+    <div class="gh"><h2>${longDate(e.date)} &middot; ${esc(e.label)}</h2><button class="reset" data-act="delentry">Delete</button></div>
+    <div class="stats">
+      <div class="stat"><small>Received</small><div class="money"><span>$</span><input data-k="recv" inputmode="decimal" value="${e.recv||""}" aria-label="Amount received"></div></div>
+      <div class="stat"><small>Going out</small><b id="eout"></b></div>
+      <div class="stat"><small id="exl"></small><b id="exv"></b></div>
+    </div>
+    <p class="hint" id="evp"></p>
+    <div class="cashbox" id="ecash" hidden></div>
+    ${e.lines.length||e.pay==="X"?"":`<p class="hint">Your plan doesn't have anything paid from this paycheck yet. Add amounts on <b>My plan</b>, or delete this and pick a different paycheck.</p>`}
+    ${e.lines.length?`
+    <div class="lrow lhead"><span>Paid</span><span>Where this paycheck goes <small>Tick the box when you've paid each one. You can change any amount for this payday only.</small></span><span id="pcount"></span></div>`:""}
+    ${e.lines.map((l,li)=>`
+    <div class="lrow${l[3]?" paid":""}">
+      <input type="checkbox" data-k="lpaid" data-l="${li}"${l[3]?" checked":""} aria-label="Mark ${esc(l[0])} as paid" title="Tick when you've paid this">
+      <span class="ln">${esc(l[0])}${l[5]?` <span title="Paid with cash">\u{1F4B5}</span>`:""}${l[2]?`<small>Due the ${ORD(l[2])}</small>`:""}</span>
+      <div class="money"><span>$</span><input data-k="lamt" data-l="${li}" inputmode="decimal" value="${l[1]||""}" placeholder="0" aria-label="Amount for ${esc(l[0])}"></div>
+    </div>`).join("")}
+    <div class="lrow xrow"><span></span><input class="nm" data-k="xname" value="${esc(S.extra)}" aria-label="Name for leftover money"><b id="exv2"></b></div>
+  </div>`:"";
+  if(e)updateEntry();
+  const L=S.log.slice().sort((a,b)=>b.date.localeCompare(a.date)||0);
+  $("hist").innerHTML=L.length?`<div class="card"><h2>Past paychecks</h2>${L.map(x=>{const ex=r2(x.recv-x.lines.reduce((s,l)=>s+l[1],0));return`
+    <button class="hrow${x.id===S.cur?" on":""}" data-act="openentry" data-id="${esc(x.id)}"><span>${longDate(x.date)} &middot; ${esc(x.label)}</span><span>${fmt(x.recv)} &middot; <span class="${ex<0?"bad":"ok"}">${ex<0?"short "+fmt(-ex):"+"+fmt(ex)}</span></span></button>`}).join("")}</div>`:"";
+}
+
+function updateEntry(){
+  const e=entry();if(!e)return;
+  const pc=$("pcount");if(pc){const n=e.lines.filter(l=>l[3]).length;pc.textContent=n===e.lines.length?"All paid ✓":`${n} of ${e.lines.length} paid`;pc.className=n===e.lines.length?"ok":""}
+  const out=r2(e.lines.reduce((s,l)=>s+l[1],0)),ex=r2(e.recv-out),vs=r2(e.recv-e.plan);
+  $("eout").textContent=fmt(out);
+  $("exl").textContent=ex<0?"Short":S.extra;
+  const v=$("exv");v.textContent=fmt(Math.abs(ex));v.className=ex<0?"bad":"ok";
+  const v2=$("exv2");v2.textContent=ex<0?"short "+fmt(-ex):fmt(ex);v2.className=ex<0?"bad":"ok";
+  const cl=e.lines.filter(l=>l[5]&&l[1]),ct=r2(cl.reduce((s,l)=>s+l[1],0)),cb=$("ecash");
+  cb.hidden=!ct;cb.innerHTML=ct?`\u{1F4B5} <b>Cash to withdraw: ${fmt(ct)}</b> <span class="hint">for ${cl.map(l=>esc(l[0])).join(", ")}</span>`:"";
+  $("evp").innerHTML=!e.recv?"Enter the amount you received.":e.pay==="X"?`This isn't part of your plan, so all of it is ${esc(S.extra)}.`:
+    (vs===0?`Exactly what you planned (${fmt(e.plan)}).`:`That's <b class="${vs<0?"bad":"ok"}">${fmt(Math.abs(vs))} ${vs<0?"less":"more"}</b> than the ${fmt(e.plan)} you planned.`)+
+    (ex<0?" Trim an amount below to make it fit.":"");
+  save();
+}
+
+function newEntry(){
+  const date=$("nd").value,pid=$("np").value,h=$("nhint"),raw=$("na").value.trim();
+  if(!isDate(date)){h.textContent="Pick the date you were paid.";$("nd").focus();return}
+  if(!raw){h.textContent="Enter the amount you received.";$("na").focus();return}
+  const p=pay(pid),e=p?{id:newId(),date,pay:pid,label:ORD(p.day)+" check",recv:r2(num(raw)),plan:p.amt,lines:linesFor(pid)}
+    :{id:newId(),date,pay:"X",label:"Extra income",recv:r2(num(raw)),plan:0,lines:[]};
+  S.log.push(e);S.cur=e.id;$("na").value="";h.textContent="";
+  renderPay();save();
+  document.querySelector("#entry .card").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+/* ---------- Export to Excel ----------
+   Builds a real .xlsx file (a zip of spreadsheet XML) in the browser, with no outside libraries. */
+function crc32(u){let c=-1;for(let i=0;i<u.length;i++){c^=u[i];for(let k=0;k<8;k++)c=c&1?(c>>>1)^0xEDB88320:c>>>1}return (c^-1)>>>0}
+function zip(files){
+  const enc=new TextEncoder(),parts=[],dir=[];let off=0;
+  const u16=n=>[n&255,n>>8&255],u32=n=>[n&255,n>>8&255,n>>16&255,n>>>24&255];
+  files.forEach(([name,text])=>{
+    const nm=enc.encode(name),data=enc.encode(text),crc=crc32(data),sz=data.length;
+    const head=[...u16(20),...u16(0),...u16(0),...u16(0),...u16(33),...u32(crc),...u32(sz),...u32(sz),...u16(nm.length),...u16(0)];
+    parts.push(new Uint8Array([...u32(0x04034b50),...head]),nm,data);
+    dir.push(new Uint8Array([...u32(0x02014b50),...u16(20),...head,...u16(0),...u16(0),...u16(0),...u32(0),...u32(off)]),nm);
+    off+=30+nm.length+sz;
+  });
+  const dsz=dir.reduce((s,p)=>s+p.length,0);
+  return new Blob([...parts,...dir,new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(dsz),...u32(off),...u16(0)])],
+    {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+/* rows[0] is the bold header; columns listed in money get a $ format. */
+function sheetXml(rows,widths,money){
+  const col=i=>{let s="";for(i++;i;i=Math.floor((i-1)/26))s=String.fromCharCode(65+(i-1)%26)+s;return s};
+  const x=s=>String(s).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const body=rows.map((r,ri)=>`<row r="${ri+1}">${r.map((v,ci)=>{const ref=col(ci)+(ri+1);
+    if(v===""||v==null)return "";
+    if(typeof v==="number")return`<c r="${ref}"${money.includes(ci)?' s="2"':""}><v>${v}</v></c>`;
+    return`<c r="${ref}" t="inlineStr"${ri===0?' s="1"':""}><is><t xml:space="preserve">${x(v)}</t></is></c>`}).join("")}</row>`).join("");
+  return`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join("")}</cols><sheetData>${body}</sheetData></worksheet>`;
+}
+function exportXlsx(){
+  const whenTxt=it=>{const w=owner(it);return (it[2]==="A"?"Auto: ":"")+(w==="S"?"Split":ORD(pay(w).day)+" check")};
+  const pays=[["Paycheck","Paid on day","Expected take-home"],...S.pays.map(p=>[ORD(p.day)+" check",p.day,p.amt]),["Total","",r2(S.pays.reduce((s,p)=>s+p.amt,0))]];
+  const plan=[["Category","Item","Due day","Monthly amount","Paid from","Pay with cash","How often","Full bill","Balance owed","Interest rate %","Savings goal","Saved so far"]];
+  S.groups.forEach(g=>g.i.forEach(it=>{const d=it[4];
+    plan.push([g.n,it[0],it[3]||"",it[1],whenTxt(it),d.c?"Yes":"",REPS.find(r=>r[0]===d.r)[1],d.r>1?d.f:"",d.o||"",d.a||"",d.t||"",d.t?(()=>{let s=d.s;S.log.forEach(e=>e.lines.forEach(l=>{if(l[4]===it[5])s+=l[1]}));return r2(s)})():""])}));
+  plan.push(["Total","","",r2(S.groups.reduce((s,g)=>s+g.i.reduce((t,it)=>t+it[1],0),0))]);
+  const log=[["Date","Paycheck","Item","Amount","Paid","Cash"]];
+  S.log.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(e=>{
+    log.push([e.date,e.label,"Received",e.recv,"",""]);
+    e.lines.forEach(l=>log.push([e.date,e.label,l[0],l[1],l[3]?"Yes":"",l[5]?"Yes":""]));
+    const ex=r2(e.recv-e.lines.reduce((s,l)=>s+l[1],0)),ct=r2(e.lines.reduce((s,l)=>s+(l[5]?l[1]:0),0));
+    if(ct)log.push([e.date,e.label,"Cash to withdraw",ct,"",""]);
+    log.push([e.date,e.label,ex<0?"Short":S.extra,ex,"",""]);
+  });
+  const sheets=[["Expected pay",sheetXml(pays,[18,14,20],[2])],["My plan",sheetXml(plan,[20,28,10,16,18,14,16,12,14,15,14,14],[3,7,8,10,11])],["Paychecks",sheetXml(log,[12,16,30,14,8,8],[3])]];
+  const ns='xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"',rel="http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+  const blob=zip([
+    ["[Content_Types].xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>`],
+    ["_rels/.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${rel}/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+    ["xl/workbook.xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook ${ns} xmlns:r="${rel}"><sheets>${sheets.map((s,i)=>`<sheet name="${s[0]}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")}</sheets></workbook>`],
+    ["xl/_rels/workbook.xml.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="${rel}/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("")}<Relationship Id="rId${sheets.length+1}" Type="${rel}/styles" Target="styles.xml"/></Relationships>`],
+    ["xl/styles.xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet ${ns}><numFmts count="1"><numFmt numFmtId="164" formatCode="&quot;$&quot;#,##0.00"/></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs></styleSheet>`],
+    ...sheets.map((s,i)=>[`xl/worksheets/sheet${i+1}.xml`,s[1]])]);
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download=`PayPortion-${today()}.xlsx`;
+  document.body.append(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+/* ---------- Import from Excel / CSV ----------
+   Reads .xlsx (a zip of XML; unzipped with the browser's built-in DecompressionStream) or .csv.
+   Looks for a header row with Item and Amount columns; Category, Due, Paid from, How often, Full bill,
+   Balance owed, Interest rate, Savings goal and Saved are picked up when present. A PayPortion export
+   round-trips exactly, including its "Expected pay" sheet. */
+async function inflateRaw(u8){return new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer())}
+async function unzip(buf){
+  const u=new Uint8Array(buf),dv=new DataView(buf),dec=new TextDecoder(),out={};
+  let e=u.length-22;while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;
+  if(e<0)throw new Error("not a zip");
+  let p=dv.getUint32(e+16,true);
+  for(let k=dv.getUint16(e+10,true);k>0;k--){
+    const method=dv.getUint16(p+10,true),csz=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),off=dv.getUint32(p+42,true);
+    const name=dec.decode(u.subarray(p+46,p+46+nl)),start=off+30+dv.getUint16(off+26,true)+dv.getUint16(off+28,true),data=u.subarray(start,start+csz);
+    if(/\.(xml|rels)$/.test(name))out[name]=dec.decode(method===8?await inflateRaw(data):data);
+    p+=46+nl+dv.getUint16(p+30,true)+dv.getUint16(p+32,true);
+  }
+  return out;
+}
+async function readXlsx(buf){
+  const z=await unzip(buf),X=s=>new DOMParser().parseFromString(s||"<x/>","application/xml"),T=(n,t)=>[...n.getElementsByTagName(t)];
+  const ss=T(X(z["xl/sharedStrings.xml"]),"si").map(si=>T(si,"t").map(t=>t.textContent).join(""));
+  const tgt={};T(X(z["xl/_rels/workbook.xml.rels"]),"Relationship").forEach(r=>tgt[r.getAttribute("Id")]=r.getAttribute("Target"));
+  return T(X(z["xl/workbook.xml"]),"sheet").map(sh=>{
+    let t=(tgt[sh.getAttribute("r:id")]||"").replace(/^\//,"");if(!t.startsWith("xl/"))t="xl/"+t;
+    const rows=[];
+    T(X(z[t]),"row").forEach(r=>{
+      const row=[];
+      T(r,"c").forEach(c=>{
+        const col=(c.getAttribute("r")||"").replace(/\d+/g,"").split("").reduce((a,ch)=>a*26+ch.charCodeAt(0)-64,0)-1,ty=c.getAttribute("t"),v=T(c,"v")[0];
+        const val=ty==="s"?ss[+v?.textContent]??"":ty==="inlineStr"?T(c,"t").map(x=>x.textContent).join(""):v?(ty==="str"||ty==="b"?v.textContent:+v.textContent):"";
+        if(col>=0)row[col]=val});
+      const ri=+r.getAttribute("r")-1;rows[ri>=0?ri:rows.length]=row});
+    return {name:sh.getAttribute("name")||"",rows:Array.from(rows,r=>r||[])};
+  });
+}
+function readCsv(text){
+  const rows=[];let row=[],cur="",q=false;
+  for(let i=0;i<text.length;i++){const ch=text[i];
+    if(q){if(ch==='"'){if(text[i+1]==='"'){cur+='"';i++}else q=false}else cur+=ch}
+    else if(ch==='"')q=true;else if(ch===","){row.push(cur);cur=""}
+    else if(ch==="\n"||ch==="\r"){if(ch==="\r"&&text[i+1]==="\n")i++;row.push(cur);rows.push(row);row=[];cur=""}else cur+=ch}
+  if(cur||row.length){row.push(cur);rows.push(row)}
+  const n=c=>{const t=c.trim().replace(/[$,]/g,"");return t!==""&&!isNaN(+t)?+t:c.trim()};
+  return [{name:"CSV",rows:rows.map(r=>r.map(n))}];
+}
+const HDR=[["cat",/categor|group/],["item",/item|name|bill|expense|description/],["due",/due|draw/],["amt",/amount|monthly|budget/],
+  ["when",/paid from|paycheck|which check/],["rep",/how often|frequen|repeat/],["full",/full bill/],["owed",/owed|balance/],
+  ["apr",/interest|apr|rate/],["goal",/goal/],["saved",/saved/],["cash",/cash/]];
+function findTable(rows){
+  for(let r=0;r<Math.min(rows.length,15);r++){
+    const m={};
+    (rows[r]||[]).forEach((h,i)=>{h=String(h??"").toLowerCase().trim();if(!h)return;
+      for(const [k,re] of HDR){if(m[k]===undefined&&re.test(h)&&!(k==="amt"&&/full|owed|balance/.test(h))&&!(k==="item"&&/categor|full/.test(h))){m[k]=i;break}}});
+    if(m.item!==undefined&&m.amt!==undefined)return {r,m};
+  }
+  return null;
+}
+const CMAP=[[/debt|loan|credit/,"Debts"],[/charit|giving|tithe/,"Charitable Gifts"],[/saving/,"Savings"],[/hous|rent|mortgage/,"Housing"],[/utilit/,"Utilities"],
+  [/food|grocer/,"Food"],[/transport|car\b|auto/,"Transportation"],[/cloth/,"Clothing"],[/medic|health/,"Medical / Health"],[/personal/,"Personal"],[/recreat|entertain|fun/,"Recreation"]];
+const dueOf=v=>{if(typeof v==="number")return v>=1&&v<=31?Math.round(v):v>31?new Date(Math.round((v-25569)*864e5)).getUTCDate():0;const m=String(v).match(/\d{1,2}/);return m&&+m[0]<=31?+m[0]:0};
+const repOf=v=>{const s=String(v).toLowerCase();return /2 year|two year|biennial/.test(s)?24:/year|annual/.test(s)?12:/6|six|semi/.test(s)?6:/3|three|quarter/.test(s)?3:/2|two|bi-?month/.test(s)?2:1};
+const nOf=v=>typeof v==="number"?v:num(v);
+
+async function importFile(f){
+  let books;
+  try{books=/\.csv$/i.test(f.name)?readCsv(await f.text()):await readXlsx(await f.arrayBuffer())}
+  catch(err){alert("PayPortion couldn't open that file. Save it from Excel as an .xlsx or .csv file and try again.");return}
+  // Expected paychecks (only from a sheet that has a take-home/expected column and a day column)
+  let pays=null;
+  for(const b of books){const h=(b.rows[0]||[]).map(x=>String(x??"").toLowerCase());
+    const di=h.findIndex(x=>/day/.test(x)),ai=h.findIndex(x=>/take-home|expected/.test(x));
+    if(di>=0&&ai>=0){const ps=b.rows.slice(1).filter(r=>dueOf(r[di])&&r[ai]!==""&&r[ai]!=null).slice(0,MAXP).map((r,k)=>({id:newId(k),day:dueOf(r[di]),amt:r2(nOf(r[ai]))}));if(ps.length){pays=ps;break}}}
+  const P=pays||S.pays;
+  // Plan items: prefer a sheet with a Category column, and never the paycheck history sheet
+  let best=null;
+  for(const b of books){if(/paycheck|history/i.test(b.name))continue;const t=findTable(b.rows);if(t&&(!best||(t.m.cat!==undefined&&best.t.m.cat===undefined)))best={b,t}}
+  if(!best){alert("PayPortion couldn't find columns named Item and Amount in that file.\n\nTip: click Export to Excel, fill in that file, then import it.");return}
+  const {b:{rows},t:{r,m}}=best,get=(row,k)=>m[k]===undefined?"":row[m[k]]??"";
+  const groups=CORE.map(([n,g])=>({n,g,c:false,i:[]}));
+  let lastCat="",count=0;
+  rows.slice(r+1).forEach(row=>{
+    const name=String(get(row,"item")).trim();
+    let cat=String(get(row,"cat")).trim();if(cat)lastCat=cat;else cat=lastCat;
+    if(!name||/^total/i.test(name)||/^total/i.test(cat))return;
+    const core=CMAP.find(([re])=>re.test(cat.toLowerCase()));
+    let g=groups.find(x=>x.n.toLowerCase()===cat.toLowerCase())||(core&&groups.find(x=>x.n===core[1]));
+    if(!g){g={n:cat||"Imported",g:null,c:true,i:[]};groups.push(g)}
+    const it=newItem(name),d=it[4];
+    it[1]=r2(nOf(get(row,"amt")));it[3]=dueOf(get(row,"due"));
+    const w=String(get(row,"when")).toLowerCase().trim(),wd=w.match(/\d{1,2}/),wp=wd&&P.find(p=>p.day===+wd[0]);
+    it[2]=!w||w.startsWith("auto")?"A":/split/.test(w)?"S":wp?wp.id:"A";
+    if(get(row,"rep")!=="")d.r=repOf(get(row,"rep"));
+    d.f=r2(nOf(get(row,"full")));d.o=r2(nOf(get(row,"owed")));
+    const apr=nOf(get(row,"apr"));d.a=Math.min(100,r2(apr>0&&apr<1?apr*100:apr));
+    d.t=r2(nOf(get(row,"goal")));d.s=r2(nOf(get(row,"saved")));
+    const cv=get(row,"cash");d.c=cv===true||cv===1||/^\s*(y|yes|x|true|1|cash|✓)\s*$/i.test(String(cv));
+    g.i.push(it);count++;
+  });
+  if(!count){alert("That file has the right columns but no budget items under them.");return}
+  const cats=groups.filter(g=>g.i.length).length;
+  if(!confirm(`Import ${count} item${count===1?"":"s"} in ${cats} categor${cats===1?"y":"ies"}${pays?` and ${pays.length} expected paycheck${pays.length===1?"":"s"}`:""} from "${f.name}"?\n\nThis replaces what's on My plan. Your paycheck history, theme and settings stay.`))return;
+  if(pays)S.pays=pays;
+  S.groups=groups;S.welcomed=true;S.view="plan";dropOrphans();render();scrollTo(0,0);
+}
+$("xfile").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";if(f)importFile(f)});
+
+/* ---------- backup / restore ---------- */
+function backup(){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:"application/json"}));
+  a.download=`PayPortion-backup-${today()}.json`;
+  document.body.append(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+$("file").addEventListener("change",async e=>{
+  const f=e.target.files[0];e.target.value="";
+  if(!f)return;
+  let o=null;
+  try{if(f.size<5e6)o=clean(JSON.parse(await f.text()))}catch(err){}
+  if(!o){alert("That file doesn't look like a PayPortion backup.");return}
+  if(confirm("Replace your current budget and paycheck history with this backup?")){S=o;applyTheme();render()}
+});
+
+/* ---------- events ---------- */
+document.addEventListener("input",e=>{
+  const t=e.target,k=t.dataset.k;if(!k)return;
+  if(k==="pamt"){pay(t.dataset.p).amt=num(t.value);update();return}
+  if(k==="pday"){const id=t.dataset.p;pay(id).day=+t.value;render();$("pd-"+id).focus();return}
+  if(k==="recv"){entry().recv=r2(num(t.value));updateEntry();return}
+  if(k==="lamt"){entry().lines[+t.dataset.l][1]=r2(num(t.value));updateEntry();return}
+  if(k==="lpaid"){entry().lines[+t.dataset.l][3]=t.checked;t.closest(".lrow").classList.toggle("paid",t.checked);updateEntry();return}
+  if(k==="xname"){S.extra=t.value||"Extra Money";updateEntry();return}
+  const g=+t.dataset.g,i=+t.dataset.i;
+  if(k==="gname"){S.groups[g].n=t.value;save();return}
+  const it=S.groups[g].i[i];
+  if(k==="amt"){it[1]=num(t.value);update()}
+  else if(k==="nm"){it[0]=t.value;save()}
+  else if(k==="when"){it[2]=t.value;update()}
+  else if(k==="due"){it[3]=+t.value;it[2]="A";render();
+    document.querySelector(`[data-k="due"][data-g="${g}"][data-i="${S.groups[g].i.indexOf(it)}"]`).focus()}
+  else if(k==="owed"){it[4].o=r2(num(t.value));update()}
+  else if(k==="apr"){it[4].a=Math.min(100,Math.max(0,r2(num(t.value))));update()}
+  else if(k==="start"){it[4].s=r2(num(t.value));update()}
+  else if(k==="goal"){const had=!!it[4].t;it[4].t=r2(num(t.value));
+    if(had!==!!it[4].t){render();const n=document.querySelector(`[data-k="goal"][data-g="${g}"][data-i="${i}"]`);n.focus();n.setSelectionRange(n.value.length,n.value.length)}
+    else update()}
+  else if(k==="rep"){it[4].r=+t.value;if(it[4].r>1&&it[4].f)it[1]=r2(it[4].f/it[4].r);render();
+    document.querySelector(`[data-k="rep"][data-g="${g}"][data-i="${i}"]`).focus()}
+  else if(k==="full"){
+    const d=it[4];d.f=r2(num(t.value));
+    if(d.f){it[1]=r2(d.f/d.r);document.querySelector(`[data-k="amt"][data-g="${g}"][data-i="${i}"]`).value=it[1]}
+    $(`fh-${g}:${i}`).textContent=d.f?`Set aside ${fmt(it[1])} a month`:"Enter the full bill and it's spread across the months";
+    update()}
+});
+function setPlaceholder(){const p=pay($("np").value);$("na").placeholder=p?p.amt.toFixed(2):"0.00"}
+$("nd").addEventListener("change",()=>{if(isDate($("nd").value)&&$("np").value!=="X"){$("np").value=nearestPay($("nd").value);setPlaceholder()}});
+$("np").addEventListener("change",setPlaceholder);
+$("na").addEventListener("keydown",e=>{if(e.key==="Enter")newEntry()});
+
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]");if(!b)return;
+  const g=+b.dataset.g,i=+b.dataset.i,a=b.dataset.act;
+  if(a==="view"){S.view=b.dataset.v;save();renderView();scrollTo(0,0)}
+  else if(a==="add"){S.groups[g].i.push(newItem("New item"));render();
+    const ins=document.querySelector(`[data-gcard="${g}"]`).querySelectorAll(".row .nm");const n=ins[ins.length-1];n.focus();n.select()}
+  else if(a==="del"){S.groups[g].i.splice(i,1);render()}
+  else if(a==="det"){const it=S.groups[g].i[i];openDet.has(it)?openDet.delete(it):openDet.add(it);render()}
+  else if(a==="addcat"){S.groups.push({n:"New category",g:null,c:true,i:[]});render();
+    const n=document.querySelector(`[data-gcard="${S.groups.length-1}"] .gname`);n.focus();n.select()}
+  else if(a==="delcat"&&S.groups[g].c&&(!S.groups[g].i.length||confirm(`Delete "${S.groups[g].n}" and everything in it?`))){
+    S.groups.splice(g,1);render()}
+  else if(a==="addpay"&&S.pays.length<MAXP){
+    const used=new Set(S.pays.map(p=>p.day)),id=newId();
+    S.pays.push({id,day:[1,15,30,8,22,5,20].find(d=>!used.has(d))||1,amt:0});render();$("pa-"+id).focus()}
+  else if(a==="delpay"&&S.pays.length>1){S.pays=S.pays.filter(p=>p.id!==b.dataset.p);dropOrphans();render()}
+  else if(a==="sched")fillSchedule();
+  else if(a==="dp"){S.dp=b.dataset.v;update()}
+  else if(a==="welcome"){S.welcomed=true;save();$("welcome").hidden=true;const f=document.querySelector("#paylist input");if(f)f.focus()}
+  else if(a==="theme"){const p=$("themep");p.hidden=!p.hidden;b.setAttribute("aria-expanded",!p.hidden)}
+  else if(a==="acc"){S.theme.acc=b.dataset.v;applyTheme();save()}
+  else if(a==="mode"){S.theme.mode=b.dataset.v;applyTheme();save()}
+  else if(a==="export")exportXlsx();
+  else if(a==="import")$("xfile").click();
+  else if(a==="cash"){const it=S.groups[g].i[i];it[4].c=!it[4].c;b.setAttribute("aria-pressed",it[4].c);
+    b.title=it[4].c?"Paid with cash. Click to stop.":"Pay this with cash? Click to add it to the cash you withdraw on payday.";update()}
+  else if(a==="newpay")newEntry();
+  else if(a==="openentry"){S.cur=b.dataset.id;save();renderPay();document.querySelector("#entry .card").scrollIntoView({behavior:"smooth",block:"start"})}
+  else if(a==="delentry"&&confirm("Delete this paycheck from your history?")){S.log=S.log.filter(x=>x.id!==S.cur);S.cur=null;save();renderPay()}
+  else if(a==="backup")backup();
+  else if(a==="restore")$("file").click();
+  else if(a==="reset"&&confirm("Clear all amounts, items, your own categories and your paycheck history, and start over? Your paydays will be kept.")){
+    const d=DEF();d.pays=S.pays.map(p=>({...p,amt:0}));d.sched=S.sched;d.extra=S.extra;d.theme=S.theme;d.welcomed=S.welcomed;S=d;render()}
+});
+/* ---------- theme ---------- */
+function applyTheme(){
+  const t=S.theme,r=document.documentElement,th=THEMES.find(x=>x[0]===t.acc)||THEMES[0];
+  const dark=t.mode==="dark"||(t.mode==="auto"&&darkQ.matches);
+  if(t.mode==="auto")delete r.dataset.theme;else r.dataset.theme=t.mode;
+  const [acc,soft,bg]=dark?th.slice(4):th.slice(1,4);
+  r.style.setProperty("--acc",acc);r.style.setProperty("--soft",soft);r.style.setProperty("--bg",bg);
+  document.querySelector('meta[name="theme-color"]').content=th[1];
+  $("swatches").innerHTML=THEMES.map(x=>`<button class="sw" data-act="acc" data-v="${x[0]}" style="background:${dark?x[4]:x[1]}" aria-pressed="${x[0]===t.acc}" aria-label="${x[0]}" title="${x[0][0].toUpperCase()+x[0].slice(1)}"></button>`).join("");
+  $("modes").innerHTML=MODES.map(([v,l])=>`<button data-act="mode" data-v="${v}" aria-pressed="${v===t.mode}">${l}</button>`).join("");
+}
+darkQ.addEventListener("change",()=>{if(S.theme.mode==="auto")applyTheme()});
+
+applyTheme();
+render();
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+</script></body></html>

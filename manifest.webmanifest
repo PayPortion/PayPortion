@@ -1,0 +1,26 @@
+{
+ "id": "./",
+ "name": "PayPortion",
+ "short_name": "PayPortion",
+ "description": "Give your paycheck a plan. A simple zero-based budgeting app that tells you how to allocate each paycheck.",
+ "lang": "en-US",
+ "dir": "ltr",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "any",
+ "background_color": "#f6f5f1",
+ "theme_color": "#1f7a5a",
+ "categories": ["finance", "productivity"],
+ "icons": [
+  {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+  {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+  {"src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+ ],
+ "screenshots": [
+  {"src": "screenshots/wide-1.png", "sizes": "1920x1080", "type": "image/png", "form_factor": "wide", "label": "Plan once and give every dollar a job until you reach zero"},
+  {"src": "screenshots/wide-2.png", "sizes": "1920x1080", "type": "image/png", "form_factor": "wide", "label": "Drop in each paycheck and see where every dollar goes"},
+  {"src": "screenshots/wide-3.png", "sizes": "1920x1080", "type": "image/png", "form_factor": "wide", "label": "Bills sorted to the right paycheck by due date"},
+  {"src": "screenshots/narrow-1.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "A paycheck mapped out on a narrow window"}
+ ]
+}
