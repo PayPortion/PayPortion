@@ -23,6 +23,7 @@ h1{font-size:22px;margin:0}
 .welcome li{margin-bottom:4px}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .themebtn{white-space:nowrap;margin-top:2px}
+.setl{margin:4px 0 8px;font-size:13px;font-weight:600;color:var(--mute)}
 .swatches{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px}
 .sw{width:38px;height:38px;border-radius:50%;border:3px solid var(--card);box-shadow:0 0 0 1px var(--line);padding:0}
 .sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ink)}
@@ -139,11 +140,15 @@ button{font:inherit;cursor:pointer;color:inherit}
 <body><main>
 <div class="top">
   <div><h1>PayPortion<sup class="tm">&trade;</sup></h1><p class="tag">Give your paycheck a plan.</p></div>
-  <button class="reset themebtn" id="themebtn" data-act="theme" aria-expanded="false" aria-controls="themep"><span aria-hidden="true">🎨</span> Theme</button>
+  <button class="reset themebtn" id="themebtn" data-act="theme" aria-expanded="false" aria-controls="themep"><span aria-hidden="true">⚙️</span> Settings</button>
 </div>
 <div class="card" id="themep" hidden>
-  <h2>Theme</h2>
+  <h2>Settings</h2>
+  <p class="setl">Open PayPortion to</p>
+  <div class="seg" id="starts" role="group" aria-label="Open PayPortion to"></div>
+  <p class="setl">Color</p>
   <div class="swatches" id="swatches" role="group" aria-label="Color"></div>
+  <p class="setl">Light or dark</p>
   <div class="seg" id="modes" role="group" aria-label="Light or dark"></div>
 </div>
 <div class="tabs" role="tablist">
@@ -240,7 +245,7 @@ const THEMES=[["green","#1f7a5a","#eef4f0","#f6f5f1","#4cc59a","#202a25","#12161
   ["teal","#0f7380","#eaf5f6","#f3f8f8","#4fc6d3","#1b2c2e","#101819"]];
 const MODES=[["auto","Match my computer"],["light","Light"],["dark","Dark"]];
 const darkQ=matchMedia("(prefers-color-scheme: dark)");
-const DEF=()=>({v:3,view:"plan",sched:null,extra:"Extra Money",dp:"snow",theme:{mode:"auto",acc:"green"},log:[],cur:null,
+const DEF=()=>({v:3,view:"plan",sched:null,extra:"Extra Money",dp:"snow",start:"last",theme:{mode:"auto",acc:"green"},log:[],cur:null,
   pays:[{id:"15",day:15,amt:0},{id:"30",day:30,amt:0}],
   groups:CORE.map(([n,g,items])=>({n,g,c:false,i:items.map(newItem)}))});
 const $=id=>document.getElementById(id);
@@ -283,7 +288,7 @@ function clean(o){
     id:String(e.id??newId()),date:e.date,pay:String(e.pay??""),label:String(e.label??""),recv:fin(e.recv),plan:fin(e.plan),
     lines:(Array.isArray(e.lines)?e.lines:[]).filter(Array.isArray).map(l=>[String(l[0]??""),fin(l[1]),day(l[2]),!!l[3],String(l[4]??""),!!l[5]])}));
   const cur=log.some(e=>e.id===o.cur)?o.cur:null;
-  return {v:3,view:o.view==="pay"?"pay":"plan",sched,extra:String(o.extra||"Extra Money"),dp:o.dp==="aval"?"aval":"snow",welcomed:!!o.welcomed,
+  return {v:3,view:o.view==="pay"?"pay":"plan",sched,extra:String(o.extra||"Extra Money"),dp:o.dp==="aval"?"aval":"snow",welcomed:!!o.welcomed,start:["plan","pay"].includes(o.start)?o.start:"last",
     theme:{mode:MODES.some(m=>m[0]===o.theme?.mode)?o.theme.mode:"auto",acc:THEMES.some(t=>t[0]===o.theme?.acc)?o.theme.acc:"green"},
     log,cur,pays,groups};
 }
@@ -291,6 +296,7 @@ function clean(o){
 let S;
 try{S=clean(JSON.parse(localStorage.getItem(KEY)))}catch(e){S=null}
 if(!S)S=DEF();
+if(S.start!=="last")S.view=S.start; // "Open PayPortion to" setting; "last" reopens the tab used last
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const pay=id=>S.pays.find(p=>p.id===id);
 let openDet=new WeakSet(); // items whose "···" details panel is open
@@ -841,6 +847,7 @@ document.addEventListener("click",e=>{
   else if(a==="theme"){const p=$("themep");p.hidden=!p.hidden;b.setAttribute("aria-expanded",!p.hidden)}
   else if(a==="acc"){S.theme.acc=b.dataset.v;applyTheme();save()}
   else if(a==="mode"){S.theme.mode=b.dataset.v;applyTheme();save()}
+  else if(a==="start"){S.start=b.dataset.v;applyTheme();save()}
   else if(a==="export")exportXlsx();
   else if(a==="import")$("xfile").click();
   else if(a==="cash"){const it=S.groups[g].i[i];it[4].c=!it[4].c;b.setAttribute("aria-pressed",it[4].c);
@@ -851,7 +858,7 @@ document.addEventListener("click",e=>{
   else if(a==="backup")backup();
   else if(a==="restore")$("file").click();
   else if(a==="reset"&&confirm("Clear all amounts, items, your own categories and your paycheck history, and start over? Your paydays will be kept.")){
-    const d=DEF();d.pays=S.pays.map(p=>({...p,amt:0}));d.sched=S.sched;d.extra=S.extra;d.theme=S.theme;d.welcomed=S.welcomed;S=d;render()}
+    const d=DEF();d.pays=S.pays.map(p=>({...p,amt:0}));d.sched=S.sched;d.extra=S.extra;d.theme=S.theme;d.welcomed=S.welcomed;d.start=S.start;S=d;render()}
 });
 /* ---------- theme ---------- */
 function applyTheme(){
@@ -862,6 +869,7 @@ function applyTheme(){
   r.style.setProperty("--acc",acc);r.style.setProperty("--soft",soft);r.style.setProperty("--bg",bg);
   document.querySelector('meta[name="theme-color"]').content=th[1];
   $("swatches").innerHTML=THEMES.map(x=>`<button class="sw" data-act="acc" data-v="${x[0]}" style="background:${dark?x[4]:x[1]}" aria-pressed="${x[0]===t.acc}" aria-label="${x[0]}" title="${x[0][0].toUpperCase()+x[0].slice(1)}"></button>`).join("");
+  $("starts").innerHTML=[["last","Where I left off"],["plan","My plan"],["pay","Payday"]].map(([v,l])=>`<button data-act="start" data-v="${v}" aria-pressed="${v===S.start}">${l}</button>`).join("");
   $("modes").innerHTML=MODES.map(([v,l])=>`<button data-act="mode" data-v="${v}" aria-pressed="${v===t.mode}">${l}</button>`).join("");
 }
 darkQ.addEventListener("change",()=>{if(S.theme.mode==="auto")applyTheme()});
