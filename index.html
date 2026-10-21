@@ -158,7 +158,11 @@ button{font:inherit;cursor:pointer;color:inherit}
 .sw.locked::after{content:"\2728";position:absolute;right:-7px;top:-9px;font-size:12px}
 .pl[data-lock="true"]::after{content:" \2728"}
 @media(max-width:620px){
-  .row{grid-template-columns:88px 1fr 96px 22px;grid-template-areas:"nm nm tools x" "due money when when"}
+  /* Phones: the dollar box comes first and gets the most room; % shrinks to a small "%" picker. */
+  .row{grid-template-columns:minmax(0,1fr) 74px minmax(64px,.5fr) 22px;grid-template-areas:"nm tools tools x" "money due when when"}
+  .row .pctsel{-webkit-appearance:none;appearance:none;width:28px!important;text-align:center;padding:0;font-size:13px;border-left:1px solid var(--line)}
+  .row .pctsel.on{width:42px!important}
+  .row .due,.row .when{font-size:13px;padding-left:2px;padding-right:2px}
   .stat b{font-size:14px}
   .lrow{grid-template-columns:22px 1fr 110px}
 }
@@ -419,10 +423,10 @@ function itemRow(it,gi,ii,g){
   <div class="row">
     <input class="nm" data-k="nm" ${a} value="${esc(it[0])}" aria-label="Item name">
     <select class="due" data-k="due" ${a} aria-label="Due date">
-      <option value="0">Due: none</option>
+      <option value="0">No due</option>
       ${DAYS.map(x=>`<option value="${x}"${x===it[3]?" selected":""}>Due ${ORD(x)}</option>`).join("")}
     </select>
-    <div class="money${d.p?" pctd":""}"><span>$</span><input data-k="amt" ${a} inputmode="decimal" value="${it[1]||""}" placeholder="0" aria-label="Amount each month"><select class="pctsel${d.p?" on":""}" data-k="pct" ${a} aria-label="Or pick a percent of your pay" title="Or pick a percent of your take-home pay">
+    <div class="money${d.p?" pctd":""}"><span>$</span><input data-k="amt" ${a} inputmode="decimal" value="${it[1]||""}" placeholder="0.00" aria-label="Amount each month"><select class="pctsel${d.p?" on":""}" data-k="pct" ${a} aria-label="Or pick a percent of your pay" title="Or pick a percent of your take-home pay">
       <option value="0">%</option>${PCTS.map(p=>`<option value="${p}"${p===d.p?" selected":""}>${p}%</option>`).join("")}<option value="-1"${d.p===-1?" selected":""} title="Any extra money that isn't planned yet goes here, so you land on exactly $0">Extra</option></select></div>
     <select class="when" data-k="when" ${a} aria-label="Paid from" title="Auto picks the paycheck from the due date and updates if your paydays change. Pick a check to always use that one.">
       <option value="A"${auto?" selected":""}>Auto (${ap==="S"?"split":ORD(pay(ap).day)})</option>
