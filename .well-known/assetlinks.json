@@ -3,6 +3,9 @@
   "target": {
     "namespace": "android_app",
     "package_name": "app.payportion",
-    "sha256_cert_fingerprints": ["28:F8:24:50:11:56:DF:7B:D5:7A:B7:8D:D1:D0:9A:C7:35:F0:F9:F9:64:BA:DB:F0:EA:4E:6B:12:AD:E2:BF:93"]
+    "sha256_cert_fingerprints": [
+      "AF:B3:7A:2F:60:D6:01:B7:B5:E0:F3:B6:EF:DA:43:2F:8F:C8:57:C5:DE:D0:F9:CE:FC:D3:0A:24:7B:BB:60:63",
+      "28:F8:24:50:11:56:DF:7B:D5:7A:B7:8D:D1:D0:9A:C7:35:F0:F9:F9:64:BA:DB:F0:EA:4E:6B:12:AD:E2:BF:93"
+    ]
   }
 }]
