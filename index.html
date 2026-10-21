@@ -143,6 +143,20 @@ button{font:inherit;cursor:pointer;color:inherit}
 .acts{display:flex;flex-wrap:wrap;gap:6px}
 .reset{background:none;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px;color:var(--mute)}
 .reset:hover{border-color:var(--acc);color:var(--ink)}
+.topb{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px}
+.plusbtn{border-color:var(--acc);color:var(--acc);font-weight:600}
+.lockcard{border-style:dashed}
+.lockcard p{margin:0 0 10px;font-size:14px;color:var(--mute)}
+.pfeat{margin:4px 0 14px;padding-left:20px;font-size:14.5px}.pfeat li{margin-bottom:3px}
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+.tier{display:flex;flex-direction:column;gap:2px;text-align:left;border:2px solid var(--line);background:var(--bg);border-radius:12px;padding:12px 14px}
+.tier b{font-size:17px}.tier small{color:var(--mute);font-size:13px}
+.tier.best{border-color:var(--acc);background:var(--soft)}
+.codebox{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.codebox input{flex:1;min-width:180px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg)}
+.sw.locked{opacity:.4;position:relative}
+.sw.locked::after{content:"\2728";position:absolute;right:-7px;top:-9px;font-size:12px}
+.pl[data-lock="true"]::after{content:" \2728"}
 @media(max-width:620px){
   .row{grid-template-columns:88px 1fr 96px 22px;grid-template-areas:"nm nm tools x" "due money when when"}
   .stat b{font-size:14px}
@@ -155,8 +169,9 @@ button{font:inherit;cursor:pointer;color:inherit}
 <body><main>
 <div class="top">
   <div><h1>PayPortion<sup class="tm">&trade;</sup></h1><p class="tag">Give your paycheck a plan.</p></div>
-  <button class="reset themebtn" id="themebtn" data-act="theme" aria-expanded="false" aria-controls="themep"><span aria-hidden="true">⚙️</span> Settings</button>
+  <div class="topb"><button class="reset themebtn plusbtn" id="plusbtn" data-act="plus" aria-expanded="false" aria-controls="plusp"><span aria-hidden="true">✨</span> Plus</button><button class="reset themebtn" id="themebtn" data-act="theme" aria-expanded="false" aria-controls="themep"><span aria-hidden="true">⚙️</span> Settings</button></div>
 </div>
+<div class="card" id="plusp" hidden></div>
 <div class="card" id="themep" hidden>
   <h2>Settings</h2>
   <p class="setl">Open PayPortion to</p>
@@ -235,7 +250,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 
 <div class="foot">
   <span>Your budget is saved on this device only. <a href="privacy.html">Privacy policy</a><br>&copy; 2026 Ravenna Frank. PayPortion&trade; All rights reserved.</span>
-  <span class="acts"><button class="reset" data-act="import" title="Bring in a budget from Excel, Apple Numbers or Google Sheets (save it as .xlsx or .csv). A file exported from PayPortion works best; any sheet with Item and Amount columns works too.">Import spreadsheet</button><button class="reset" data-act="export" title="Opens in Excel, Apple Numbers and Google Sheets">Export spreadsheet</button><button class="reset" data-act="exportcsv" title="A plain CSV file of your plan, for any spreadsheet app">Export CSV</button><button class="reset" data-act="backup">Back up</button><button class="reset" data-act="restore">Restore</button><button class="reset" data-act="reset">Clear everything</button></span>
+  <span class="acts"><button class="reset" data-act="share" title="Sends a link with a copy of your budget by text or email. Your partner opens it to load the same budget. Nothing goes through a server.">Send to my partner</button><button class="reset pl" data-act="import" title="Bring in a budget from Excel, Apple Numbers or Google Sheets (save it as .xlsx or .csv). A file exported from PayPortion works best; any sheet with Item and Amount columns works too.">Import spreadsheet</button><button class="reset pl" data-act="export" title="Opens in Excel, Apple Numbers and Google Sheets">Export spreadsheet</button><button class="reset pl" data-act="exportcsv" title="A plain CSV file of your plan, for any spreadsheet app">Export CSV</button><button class="reset" data-act="backup">Back up</button><button class="reset" data-act="restore">Restore</button><button class="reset" data-act="reset">Clear everything</button></span>
 </div>
 <input type="file" id="file" accept=".json,application/json" hidden>
 <input type="file" id="xfile" accept=".xlsx,.csv" hidden>
@@ -263,7 +278,11 @@ const THEMES=[["green","#1f7a5a","#eef4f0","#f6f5f1","#4cc59a","#202a25","#12161
   ["purple","#6b3fb0","#f2eefa","#f7f5fa","#b593f2","#262033","#15121b"],
   ["pink","#b0306a","#fbeef4","#faf5f7","#f08cb8","#33202a","#1b1216"],
   ["orange","#a8500f","#fbf1e8","#faf6f2","#f2a35e","#33261b","#1b1611"],
-  ["teal","#0f7380","#eaf5f6","#f3f8f8","#4fc6d3","#1b2c2e","#101819"]];
+  ["teal","#0f7380","#eaf5f6","#f3f8f8","#4fc6d3","#1b2c2e","#101819"],
+  ["cranberry","#b3261e","#fbeceb","#faf5f4","#ff8a80","#33201f","#1b1212"],
+  ["indigo","#3f46b5","#eeeffa","#f5f5fa","#9aa0f5","#22233a","#121320"],
+  ["gold","#8a6100","#faf3e3","#faf8f2","#e6b84f","#302917","#1a1710"],
+  ["slate","#475569","#eef1f5","#f5f6f8","#a5b4c8","#232a33","#121519"]];
 /* Welcome checklist: [built-in category, item, ticked by default]. Ticked items become the starting plan. */
 const STARTER=[["Housing","Rent / Mortgage",1],["Housing","Home or renter's insurance",0],["Housing","HOA fees",0],
   ["Utilities","Electric",1],["Utilities","Water",1],["Utilities","Internet",1],["Utilities","Phone",1],["Utilities","Gas / heating",0],
@@ -284,10 +303,20 @@ function applyStarter(){
   const picked=[...document.querySelectorAll(".stc:checked")].map(c=>STARTER[+c.value]);
   S.groups.forEach(g=>{if(g.k&&STARTER.some(s=>s[0]===g.k))g.i=picked.filter(s=>s[0]===g.k).map(s=>newItem(s[1]))});
 }
+/* PayPortion Plus. While live is false everyone has every feature, and anyone who sets PayPortion up is recorded
+   as a founding member (Plus free for life). To launch: create the two products in Google Play and Partner Center,
+   fill in the Lemon Squeezy links and store id, deploy the purchase-check server, set the launch date, then live:true.
+   Google refunds Play purchases that aren't acknowledged by the server within 3 days, so never go live on Play without it. */
+const PLUS={live:false,launch:"",                  // launch: "YYYY-MM-DD"; people using PayPortion before then are founding members
+  yearly:"plus_yearly",lifetime:"plus_lifetime",   // product ids in Google Play and Microsoft Partner Center
+  price:{yearly:"$19.99/year",lifetime:"$39.99 once"},
+  web:{yearly:"",lifetime:"",store:0},             // Lemon Squeezy checkout links and store id (web, iPhone, Mac)
+  server:""};                                      // purchase-check server address for Google Play (plus-server/)
+const FREE_THEMES=["green","blue","purple","teal"];
 const PCTS=[1,2,3,4,5,6,7,8,9,10,12,15,20,25,30,35,40,45,50]; // "% of take-home pay" choices on each line
 const MODES=[["auto","Match my computer"],["light","Light"],["dark","Dark"]];
 const darkQ=matchMedia("(prefers-color-scheme: dark)");
-const DEF=()=>({v:3,view:"plan",sched:null,extra:"Extra Money",dp:"snow",start:"last",theme:{mode:"auto",acc:"green"},log:[],cur:null,
+const DEF=()=>({v:3,view:"plan",sched:null,extra:"Extra Money",dp:"snow",start:"last",theme:{mode:"auto",acc:"green"},log:[],cur:null,plus:cleanPlus(),
   pays:[{id:"15",day:15,amt:0},{id:"30",day:30,amt:0}],
   groups:CORE.map(coreGroup)});
 /* A built-in category; k remembers which one it was even after the user renames it. */
@@ -335,7 +364,13 @@ function clean(o){
   const cur=log.some(e=>e.id===o.cur)?o.cur:null;
   return {v:3,view:o.view==="pay"?"pay":"plan",sched,extra:String(o.extra||"Extra Money"),dp:o.dp==="aval"?"aval":"snow",welcomed:!!o.welcomed,start:["plan","pay"].includes(o.start)?o.start:"last",
     theme:{mode:MODES.some(m=>m[0]===o.theme?.mode)?o.theme.mode:"auto",acc:THEMES.some(t=>t[0]===o.theme?.acc)?o.theme.acc:"green"},
-    log,cur,pays,groups};
+    log,cur,pays,groups,plus:cleanPlus(o.plus)};
+}
+/* Plus status: fm = date they became a founding member, src = how Plus was unlocked ("play", "ms" or "code"),
+   key/inst = Lemon Squeezy unlock code and activation, exp = when a yearly code ends, chk = when it was last checked. */
+function cleanPlus(p){
+  p=p&&typeof p==="object"?p:{};const s=k=>typeof p[k]==="string"?p[k].slice(0,200):"";
+  return {fm:isDate(p.fm)?p.fm:"",src:["play","ms","code"].includes(p.src)?p.src:"",key:s("key"),inst:s("inst"),exp:isDate(p.exp)?p.exp:"",chk:isDate(p.chk)?p.chk:""};
 }
 
 let S;
@@ -345,6 +380,16 @@ if(S.start!=="last")S.view=S.start; // "Open PayPortion to" setting; "last" reop
 // Anyone who already has amounts in their plan has started; never show them the setup checklist (it would replace their items).
 if(!S.welcomed&&(S.pays.some(p=>p.amt)||S.groups.some(g=>g.i.some(i=>i[1]))||S.log.length))S.welcomed=true;
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+/* Founding members: anyone who set PayPortion up before Plus launched keeps Plus free. Someone who skipped the
+   app between this version and the launch still counts if their paycheck history starts before the launch. */
+function markFounder(){
+  if(S.plus.fm)return;
+  const first=S.log.map(e=>e.date).sort()[0];
+  if(S.welcomed&&(!PLUS.launch||today()<PLUS.launch))S.plus.fm=today();
+  else if(PLUS.launch&&first&&first<PLUS.launch)S.plus.fm=first;
+}
+markFounder();
+const hasPlus=()=>!PLUS.live||!!S.plus.fm||(!!S.plus.src&&(!S.plus.exp||S.plus.exp>=today()));
 const pay=id=>S.pays.find(p=>p.id===id);
 let openDet=new WeakSet(); // items whose "···" details panel is open
 let editGoal=new WeakSet(); // categories whose goal-% editor is open
@@ -386,7 +431,7 @@ function itemRow(it,gi,ii,g){
     </select>
     <span class="tools"><button class="cashbtn" data-act="cash" ${a} aria-pressed="${d.c}" title="${d.c?"Paid with cash. Click to stop.":"Pay this with cash? Click to add it to the cash you withdraw on payday."}" aria-label="Pay ${esc(it[0])} with cash">\u{1F4B5} Cash</button><button class="more${d.o||d.a||d.t||d.r>1?" has":""}" data-act="det" ${a} aria-expanded="${open}" aria-label="More details" title="How often it repeats, savings goal, balance owed, interest rate">&middot;&middot;&middot;</button></span>
     <button class="x" data-act="del" ${a} aria-label="Remove item">&times;</button>
-  </div>${d.t?`
+  </div>${d.t&&hasPlus()?`
   <div class="gl"><div class="gbar"><div id="gb-${k}"></div></div><span id="gt-${k}"></span></div>`:""}${open?`
   <div class="det">
     <label>How often<select data-k="rep" ${a}>${REPS.map(([v,t])=>`<option value="${v}"${v===d.r?" selected":""}>${t}</option>`).join("")}</select></label>
@@ -396,7 +441,9 @@ function itemRow(it,gi,ii,g){
     <label>Balance owed (optional)<div class="money"><span>$</span><input data-k="owed" ${a} inputmode="decimal" value="${d.o||""}" placeholder="0"></div></label>
     <label>Interest rate (optional)<div class="money pct"><input data-k="apr" ${a} inputmode="decimal" value="${d.a||""}" placeholder="0"><span>%</span></div></label>
     <p class="hint" id="dh-${k}">${debtHint(it)}</p>`:""}
-    ${saveish?`
+    ${saveish&&!hasPlus()?`
+    <p class="hint">Savings goals with a progress bar come with <button class="glink" data-act="plus">PayPortion Plus &#x2728;</button></p>`:""}
+    ${saveish&&hasPlus()?`
     <label>Savings goal (optional)<div class="money"><span>$</span><input data-k="goal" ${a} inputmode="decimal" value="${d.t||""}" placeholder="0"></div></label>
     ${d.t?`<label>Already saved<div class="money"><span>$</span><input data-k="start" ${a} inputmode="decimal" value="${d.s||""}" placeholder="0"></div></label>
     <p class="hint">Each paycheck you drop in on the Payday tab adds to this goal.</p>`:""}`:""}
@@ -546,6 +593,7 @@ function renderDebtPlan(){
   S.groups.forEach(g=>g.i.forEach(it=>{if(it[4].o>0)ds.push({n:it[0]||"(unnamed)",b:it[4].o,a:it[4].a,i:it[4].a/1200,p:it[1]})}));
   const box=$("debtplan");
   if(!ds.length){box.innerHTML="";return}
+  if(!hasPlus()){box.innerHTML=lockCard("Debt payoff plan","See the month each debt is paid off, your debt-free date, and how much interest you save by rolling each paid-off payment into the next debt.");return}
   const av=S.dp==="aval";
   const order=ds.slice().sort(av?(x,y)=>y.a-x.a||x.b-y.b:(x,y)=>x.b-y.b||y.a-x.a);
   const R=payoff(order,true),F=payoff(order,false);
@@ -564,6 +612,8 @@ function renderDebtPlan(){
       <span class="when">${d.end?`Paid off ${monthsFromNow(d.end)}`:`<span class="bad">Not paid off</span>`}</span></div>`).join("")}
     <p class="dpsum">${sum}</p></div>`;
 }
+
+const lockCard=(title,txt)=>`<div class="card lockcard"><h2>${title} &#x2728;</h2><p>${txt}</p><button class="btn" data-act="plus">See PayPortion Plus</button></div>`;
 
 /* Items paid from a paycheck that no longer exists go back to "Split". */
 function dropOrphans(){S.groups.forEach(g=>g.i.forEach(it=>{if(it[2]!=="A"&&!pay(it[2]))it[2]="S"}))}
@@ -637,9 +687,11 @@ function renderPay(){
     <div class="lrow xrow"><span></span><input class="nm" data-k="xname" value="${esc(S.extra)}" aria-label="Name for leftover money"><b id="exv2"></b></div>
   </div>`:"";
   if(e)updateEntry();
-  const L=S.log.slice().sort((a,b)=>b.date.localeCompare(a.date)||0);
+  // Without Plus only the 3 most recent paychecks are listed; the rest stay saved.
+  const all=S.log.slice().sort((a,b)=>b.date.localeCompare(a.date)||0),L=hasPlus()?all:all.slice(0,3),more=all.length-L.length;
   $("hist").innerHTML=L.length?`<div class="card"><h2>Past paychecks</h2>${L.map(x=>{const ex=r2(x.recv-x.lines.reduce((s,l)=>s+l[1],0));return`
-    <button class="hrow${x.id===S.cur?" on":""}" data-act="openentry" data-id="${esc(x.id)}"><span>${longDate(x.date)} &middot; ${esc(x.label)}</span><span>${fmt(x.recv)} &middot; <span class="${ex<0?"bad":"ok"}">${ex<0?"short "+fmt(-ex):"+"+fmt(ex)}</span></span></button>`}).join("")}</div>`:"";
+    <button class="hrow${x.id===S.cur?" on":""}" data-act="openentry" data-id="${esc(x.id)}"><span>${longDate(x.date)} &middot; ${esc(x.label)}</span><span>${fmt(x.recv)} &middot; <span class="${ex<0?"bad":"ok"}">${ex<0?"short "+fmt(-ex):"+"+fmt(ex)}</span></span></button>`}).join("")}${more?`
+    <p class="hint">${more} older paycheck${more===1?" is":"s are"} saved too. <button class="glink" data-act="plus">See your full history with Plus &#x2728;</button></p>`:""}</div>`:"";
 }
 
 function updateEntry(){
@@ -850,7 +902,7 @@ async function importFile(f){
   const cats=groups.filter(g=>g.i.length).length;
   if(!confirm(`Import ${count} item${count===1?"":"s"} in ${cats} categor${cats===1?"y":"ies"}${pays?` and ${pays.length} expected paycheck${pays.length===1?"":"s"}`:""} from "${f.name}"?\n\nThis replaces what's on My plan. Your paycheck history, theme and settings stay.`))return;
   if(pays)S.pays=pays;
-  S.groups=groups;S.welcomed=true;S.view="plan";dropOrphans();render();scrollTo(0,0);
+  S.groups=groups;S.welcomed=true;S.view="plan";markFounder();dropOrphans();render();scrollTo(0,0);
 }
 $("xfile").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";if(f)importFile(f)});
 
@@ -869,7 +921,8 @@ $("file").addEventListener("change",async e=>{
   let o=null;
   try{if(f.size<5e6)o=clean(JSON.parse(await f.text()))}catch(err){}
   if(!o){alert("That file doesn't look like a PayPortion backup.");return}
-  if(confirm("Replace your current budget and paycheck history with this backup?")){S=o;applyTheme();render()}
+  // Plus unlocked on this device stays unlocked, whatever the backup says.
+  if(confirm("Replace your current budget and paycheck history with this backup?")){if(S.plus.fm||S.plus.src)o.plus=S.plus;S=o;markFounder();applyTheme();render()}
 });
 
 /* ---------- events ---------- */
@@ -938,11 +991,17 @@ document.addEventListener("click",e=>{
   else if(a==="delpay"&&S.pays.length>1){S.pays=S.pays.filter(p=>p.id!==b.dataset.p);dropOrphans();render()}
   else if(a==="sched")fillSchedule();
   else if(a==="dp"){S.dp=b.dataset.v;update()}
-  else if(a==="welcome"){applyStarter();S.welcomed=true;render();scrollTo(0,0);const f=document.querySelector("#paylist input");if(f)f.focus()}
+  else if(a==="welcome"){applyStarter();S.welcomed=true;markFounder();render();scrollTo(0,0);const f=document.querySelector("#paylist input");if(f)f.focus()}
   else if(a==="theme"){const p=$("themep");p.hidden=!p.hidden;b.setAttribute("aria-expanded",!p.hidden)}
-  else if(a==="acc"){S.theme.acc=b.dataset.v;applyTheme();save()}
+  else if(a==="acc"){if(!hasPlus()&&!FREE_THEMES.includes(b.dataset.v)){openPlus();return}S.theme.acc=b.dataset.v;applyTheme();save()}
+  else if(a==="plus"){if(b.id==="plusbtn"&&!$("plusp").hidden){$("plusp").hidden=true;b.setAttribute("aria-expanded",false)}else openPlus()}
+  else if(a==="buy")buy(b.dataset.v);
+  else if(a==="redeem")redeem();
+  else if(a==="restorebuy")checkStore(true);
+  else if(a==="share")shareBudget();
   else if(a==="mode"){S.theme.mode=b.dataset.v;applyTheme();save()}
   else if(a==="start"){S.start=b.dataset.v;applyTheme();save()}
+  else if((a==="export"||a==="exportcsv"||a==="import")&&!hasPlus())openPlus();
   else if(a==="export")exportXlsx();
   else if(a==="exportcsv")exportCsv();
   else if(a==="import")$("xfile").click();
@@ -954,17 +1013,145 @@ document.addEventListener("click",e=>{
   else if(a==="backup")backup();
   else if(a==="restore")$("file").click();
   else if(a==="reset"&&confirm("Clear all amounts, items, your own categories and your paycheck history, and start over? Your paydays will be kept.")){
-    const d=DEF();d.pays=S.pays.map(p=>({...p,amt:0}));d.sched=S.sched;d.extra=S.extra;d.theme=S.theme;d.welcomed=S.welcomed;d.start=S.start;S=d;render()}
+    const d=DEF();d.pays=S.pays.map(p=>({...p,amt:0}));d.sched=S.sched;d.extra=S.extra;d.theme=S.theme;d.welcomed=S.welcomed;d.start=S.start;d.plus=S.plus;S=d;render()}
 });
+/* ---------- PayPortion Plus ----------
+   Inside the Google Play or Microsoft Store app, Plus is bought through that store (Digital Goods API).
+   Everywhere else (web, iPhone, Mac) it's bought on Lemon Squeezy, which emails an unlock code. */
+let STORE=null; // {s: Digital Goods service, m: billing method, play: true for Google Play}
+function openPlus(){renderPlus();const p=$("plusp");p.hidden=false;$("plusbtn").setAttribute("aria-expanded",true);p.scrollIntoView({behavior:"smooth",block:"start"})}
+function refreshPlus(){applyTheme();render();if(!$("plusp").hidden)renderPlus()}
+function renderPlus(){
+  const p=S.plus,on=hasPlus(),how={play:"through Google Play",ms:"through the Microsoft Store",code:"with your unlock code"}[p.src];
+  let body;
+  if(p.fm)body=`<p>You're a <b>founding member</b> &#x1F49A; ${PLUS.live?"Plus is yours free, for life.":"When Plus launches, you keep all of it free, for life."} Thank you for being here early.</p>`;
+  else if(!PLUS.live)body=`<p>Everything is free while PayPortion is new.</p>`;
+  else if(on)body=`<p class="ok"><b>Plus is on</b>, unlocked ${how}.${p.exp?` Your year runs until ${longDate(p.exp)}.`:""}</p>`;
+  else body=`<div class="tiers">
+      <button class="tier best" data-act="buy" data-v="yearly"><b>${esc(PLUS.price.yearly)}</b><small>Try it free for 14 days. Cancel anytime.</small></button>
+      <button class="tier" data-act="buy" data-v="lifetime"><b>${esc(PLUS.price.lifetime)}</b><small>Pay once and keep it forever.</small></button></div>
+    ${STORE?`<p class="hint"><button class="glink" data-act="restorebuy">Already bought Plus? Restore it</button></p>`:`
+    <p class="setl">Have an unlock code?</p>
+    <div class="codebox"><input id="pcode" placeholder="Paste your code" autocomplete="off" spellcheck="false" aria-label="Unlock code"><button class="btn" data-act="redeem">Unlock</button></div>`}`;
+  $("plusp").innerHTML=`<h2>&#x2728; PayPortion Plus</h2>
+    <p class="hint" style="margin:0 0 4px">Your budget, paydays, backups and Send to my partner are always free. Plus adds:</p>
+    <ul class="pfeat"><li>Debt payoff plan with your debt-free date</li><li>Savings goals with progress bars</li>
+      <li>Spreadsheet import and export (Excel, Numbers, Google Sheets, CSV)</li><li>${THEMES.length-FREE_THEMES.length} more colors</li><li>Your full paycheck history</li></ul>
+    ${body}<p class="hint" id="pmsg" role="status"></p>`;
+}
+const pmsg=t=>{const m=$("pmsg");if(m)m.textContent=t};
+const daysSince=d=>(Date.parse(today())-Date.parse(d))/864e5;
+
+async function connectStore(){
+  if(!("getDigitalGoodsService" in window))return;
+  for(const m of ["https://play.google.com/billing","https://store.microsoft.com/billing"]){
+    try{const s=await window.getDigitalGoodsService(m);if(s){STORE={s,m,play:m.includes("google")};break}}catch(e){}}
+  if(!STORE)return;
+  try{(await STORE.s.getDetails([PLUS.yearly,PLUS.lifetime])).forEach(x=>{
+    const v=new Intl.NumberFormat("en-US",{style:"currency",currency:x.price.currency}).format(x.price.value);
+    if(x.itemId===PLUS.lifetime)PLUS.price.lifetime=v+" once";else PLUS.price.yearly=v+"/year"})}catch(e){}
+  await checkStore();
+}
+/* Asks the store what this person owns. Google Play purchases also go to the purchase-check server,
+   which acknowledges them (Google refunds unacknowledged purchases after 3 days). */
+async function checkStore(asked){
+  if(!STORE)return;
+  try{
+    const own=(await STORE.s.listPurchases()).filter(x=>x.itemId===PLUS.yearly||x.itemId===PLUS.lifetime);
+    if(STORE.play)own.forEach(x=>playCheck(x.itemId,x.purchaseToken));
+    if(own.length)Object.assign(S.plus,{src:STORE.play?"play":"ms",exp:""});
+    else if(S.plus.src==="play"||S.plus.src==="ms")S.plus.src="";
+    save();refreshPlus();
+    if(asked)pmsg(own.length?"Plus is restored. Welcome back!":"We couldn't find a Plus purchase on this account.");
+  }catch(e){if(asked)pmsg("Couldn't reach the store. Check your connection and try again.")}
+}
+async function playCheck(sku,token){
+  if(!PLUS.server)return;
+  try{await fetch(PLUS.server,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sku,token,sub:sku===PLUS.yearly})})}catch(e){}
+}
+async function buy(v){
+  if(!STORE){
+    if(PLUS.web[v]){open(PLUS.web[v],"_blank","noopener");pmsg("Checkout opened in a new tab. After you pay, your unlock code arrives by email. Paste it below and tap Unlock.")}
+    else pmsg("Buying Plus isn't ready yet. Check back soon!");
+    return}
+  let res;
+  try{res=await new PaymentRequest([{supportedMethods:STORE.m,data:{sku:PLUS[v]}}]).show()}
+  catch(e){pmsg("The purchase was cancelled. Nothing was charged.");return}
+  try{await res.complete("success")}catch(e){}
+  if(STORE.play)await playCheck(PLUS[v],res.details.purchaseToken);
+  Object.assign(S.plus,{src:STORE.play?"play":"ms",exp:""});save();refreshPlus();pmsg("Thank you! Plus is on.");
+}
+/* Lemon Squeezy unlock codes: activated once, then re-checked about once a week when online. */
+async function lsCall(path,body){
+  const r=await fetch("https://api.lemonsqueezy.com/v1/licenses/"+path,{method:"POST",
+    headers:{Accept:"application/json","Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams(body)});
+  return r.json();
+}
+const lsGood=j=>!!j&&j.meta?.store_id===PLUS.web.store&&j.license_key?.status==="active";
+async function redeem(){
+  const key=($("pcode")?.value||"").trim();
+  if(!key){pmsg("Paste the unlock code from your email first.");return}
+  pmsg("Checking your code…");
+  try{
+    const j=await lsCall("activate",{license_key:key,instance_name:"PayPortion on "+(navigator.userAgentData?.platform||"this device")});
+    if(!j.activated||!lsGood(j)){pmsg("That code didn't work. Check that you copied all of it, or email hello@payportionapp.com for help.");return}
+    Object.assign(S.plus,{src:"code",key,inst:j.instance?.id||"",exp:(j.license_key.expires_at||"").slice(0,10),chk:today()});
+    save();refreshPlus();pmsg("Thank you! Plus is on.");
+  }catch(e){pmsg("Couldn't check your code. Are you online?")}
+}
+async function recheckCode(){
+  const p=S.plus;if(p.src!=="code"||!p.key||(p.chk&&daysSince(p.chk)<7))return;
+  try{
+    const j=await lsCall("validate",{license_key:p.key,instance_id:p.inst});
+    if(typeof j.valid!=="boolean")return;
+    if(j.valid&&lsGood(j))p.exp=(j.license_key.expires_at||"").slice(0,10);else Object.assign(p,{src:"",exp:""});
+    p.chk=today();save();refreshPlus();
+  }catch(e){}
+}
+
+/* ---------- send to my partner ----------
+   The budget travels inside the link itself, after the "#". Browsers never send that part to any server. */
+const b64u=u8=>{let s="";u8.forEach(c=>s+=String.fromCharCode(c));return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")};
+const unb64u=s=>Uint8Array.from(atob(s.replace(/-/g,"+").replace(/_/g,"/")),c=>c.charCodeAt(0));
+const squeeze=async(u8,how)=>new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(how)).arrayBuffer());
+async function shareBudget(){
+  // Their own colors, settings and Plus stay theirs. Very long histories are trimmed to the newest paychecks so the link stays sendable.
+  const o={v:S.v,sched:S.sched,extra:S.extra,dp:S.dp,welcomed:true,pays:S.pays,groups:S.groups,log:S.log};
+  let link;
+  for(;;){
+    link=location.origin+location.pathname+"#budget="+b64u(await squeeze(new TextEncoder().encode(JSON.stringify(o)),new CompressionStream("deflate-raw")));
+    if(link.length<12000||!o.log.length)break;
+    o.log=o.log.slice(Math.ceil(o.log.length/2));
+  }
+  const text="Here's our budget in PayPortion. Open this link to load it:";
+  if(navigator.share){try{await navigator.share({title:"Our PayPortion budget",text,url:link});return}catch(e){if(e.name==="AbortError")return}}
+  try{await navigator.clipboard.writeText(link);alert("Link copied!\n\nPaste it into a text or email to your partner. When they open it, PayPortion loads this budget on their phone or computer.")}
+  catch(e){prompt("Copy this link and send it to your partner:",link)}
+}
+async function openShared(){
+  const m=location.hash.match(/^#budget=([\w-]+)$/);if(!m)return;
+  history.replaceState(null,"",location.pathname+location.search);
+  let o=null;
+  try{o=clean(JSON.parse(new TextDecoder().decode(await squeeze(unb64u(m[1]),new DecompressionStream("deflate-raw")))))}catch(e){}
+  if(!o){alert("That budget link looks incomplete. Ask your partner to send it again.");return}
+  const has=S.pays.some(p=>p.amt)||S.groups.some(g=>g.i.some(i=>i[1]))||S.log.length;
+  if(!confirm("Load the budget your partner sent you?"+(has?"\n\nThis replaces the budget on this device. To keep a copy of yours, tap Cancel, tap Back up, then open the link again.":"")))return;
+  Object.assign(o,{theme:S.theme,plus:S.plus,start:S.start,welcomed:true,view:"plan",cur:null});
+  S=o;markFounder();applyTheme();render();scrollTo(0,0);
+}
+addEventListener("hashchange",openShared);
+
 /* ---------- theme ---------- */
 function applyTheme(){
-  const t=S.theme,r=document.documentElement,th=THEMES.find(x=>x[0]===t.acc)||THEMES[0];
+  // Plus colors fall back to green without Plus; the choice is kept in case Plus comes back.
+  const t=S.theme,r=document.documentElement,P=hasPlus(),free=c=>P||FREE_THEMES.includes(c),th=free(t.acc)&&THEMES.find(x=>x[0]===t.acc)||THEMES[0];
   const dark=t.mode==="dark"||(t.mode==="auto"&&darkQ.matches);
   if(t.mode==="auto")delete r.dataset.theme;else r.dataset.theme=t.mode;
   const [acc,soft,bg]=dark?th.slice(4):th.slice(1,4);
   r.style.setProperty("--acc",acc);r.style.setProperty("--soft",soft);r.style.setProperty("--bg",bg);
   document.querySelector('meta[name="theme-color"]').content=th[1];
-  $("swatches").innerHTML=$("wsw").innerHTML=THEMES.map(x=>`<button class="sw" data-act="acc" data-v="${x[0]}" style="background:${dark?x[4]:x[1]}" aria-pressed="${x[0]===t.acc}" aria-label="${x[0]}" title="${x[0][0].toUpperCase()+x[0].slice(1)}"></button>`).join("");
+  $("swatches").innerHTML=$("wsw").innerHTML=THEMES.map(x=>`<button class="sw${free(x[0])?"":" locked"}" data-act="acc" data-v="${x[0]}" style="background:${dark?x[4]:x[1]}" aria-pressed="${x[0]===th[0]}" aria-label="${x[0]}${free(x[0])?"":" (PayPortion Plus)"}" title="${x[0][0].toUpperCase()+x[0].slice(1)}${free(x[0])?"":" · PayPortion Plus"}"></button>`).join("");
+  document.querySelectorAll(".pl").forEach(b=>b.dataset.lock=!P);
   $("starts").innerHTML=[["last","Where I left off"],["plan","My plan"],["pay","Payday"]].map(([v,l])=>`<button data-act="start" data-v="${v}" aria-pressed="${v===S.start}">${l}</button>`).join("");
   $("modes").innerHTML=$("wmodes").innerHTML=MODES.map(([v,l])=>`<button data-act="mode" data-v="${v}" aria-pressed="${v===t.mode}">${l}</button>`).join("");
 }
@@ -972,5 +1159,7 @@ darkQ.addEventListener("change",()=>{if(S.theme.mode==="auto")applyTheme()});
 
 applyTheme();
 render();
+openShared();
+if(PLUS.live){connectStore();recheckCode()}
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 </script></body></html>
