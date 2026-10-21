@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "app.payportion",
+    "sha256_cert_fingerprints": ["28:F8:24:50:11:56:DF:7B:D5:7A:B7:8D:D1:D0:9A:C7:35:F0:F9:F9:64:BA:DB:F0:EA:4E:6B:12:AD:E2:BF:93"]
+  }
+}]
