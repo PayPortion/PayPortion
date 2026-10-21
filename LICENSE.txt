@@ -1,7 +1,7 @@
 PayPortion
-Copyright (c) 2026 Ravenna Frank. All rights reserved.
+Copyright (c) 2026 PayPortion. All rights reserved.
 
-PayPortion(TM) is a trademark of Ravenna Frank.
+PayPortion(TM) is a trademark of its owner.
 
 This software, including its source code, design, text, icons and screenshots,
 is proprietary. No permission is granted to copy, modify, publish, distribute,
