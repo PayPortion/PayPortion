@@ -143,6 +143,10 @@ button{font:inherit;cursor:pointer;color:inherit}
 .acts{display:flex;flex-wrap:wrap;gap:6px}
 .reset{background:none;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px;color:var(--mute)}
 .reset:hover{border-color:var(--acc);color:var(--ink)}
+@keyframes inL{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes inR{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+.swl{animation:inL .22s ease-out}.swr{animation:inR .22s ease-out}
+@media(prefers-reduced-motion:reduce){.swl,.swr{animation:none}}
 .topb{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px}
 .plusbtn{border-color:var(--acc);color:var(--acc);font-weight:600}
 .lockcard{border-style:dashed}
@@ -203,7 +207,7 @@ button{font:inherit;cursor:pointer;color:inherit}
   <ol>
     <li>Type the take-home pay you expect under <b>Expected paychecks</b>.</li>
     <li>Give every dollar a place until you reach <b>$0 left</b>. Type a dollar amount, or pick a <b>%</b> of your pay. Pick <b>"Extra"</b> in the % list on one line (like Savings) to send any extra, unplanned money there, so you always land on exactly $0.</li>
-    <li>On payday, open <b>2. Payday</b> and drop in what you were paid. Tap <b>&#x1F4B5; Cash</b> on anything you pay in cash.</li>
+    <li>On payday, open <b>2. Payday</b> (or swipe left) and drop in what you were paid. Tap <b>&#x1F4B5; Cash</b> on anything you pay in cash.</li>
   </ol>
   <button class="btn" data-act="welcome">Let's get started</button>
 </div>
@@ -972,6 +976,21 @@ function setPlaceholder(){const p=pay($("np").value);$("na").placeholder=p?p.amt
 $("nd").addEventListener("change",()=>{if(isDate($("nd").value)&&$("np").value!=="X"){$("np").value=nearestPay($("nd").value);setPlaceholder()}});
 $("np").addEventListener("change",setPlaceholder);
 $("na").addEventListener("keydown",e=>{if(e.key==="Enter")newEntry()});
+/* Swipe left for Payday, right for My plan. Only quick, clearly sideways swipes count, never ones that start
+   on a box you type in or a list you pick from, or at the very edge of the screen (the phone's own back gesture). */
+let sw0=null;
+addEventListener("touchstart",e=>{
+  const t=e.touches[0];
+  sw0=e.touches.length===1&&!e.target.closest("input,select,textarea")&&t.clientX>24&&t.clientX<innerWidth-24?{x:t.clientX,y:t.clientY,at:Date.now()}:null;
+},{passive:true});
+addEventListener("touchend",e=>{
+  if(!sw0)return;
+  const t=e.changedTouches[0],dx=t.clientX-sw0.x,dy=t.clientY-sw0.y,quick=Date.now()-sw0.at<700;sw0=null;
+  if(!quick||Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*2)return;
+  const v=dx<0?"pay":"plan";if(S.view===v)return;
+  S.view=v;save();renderView();scrollTo(0,0);
+  const sec=$(v==="pay"?"payv":"planv");sec.classList.remove("swl","swr");void sec.offsetWidth;sec.classList.add(dx<0?"swl":"swr");
+},{passive:true});
 
 document.addEventListener("click",e=>{
   const b=e.target.closest("[data-act]");if(!b)return;
